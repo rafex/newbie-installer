@@ -40,7 +40,7 @@ NGINX_VERSION="1.17.1"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 function nginx_hello () {
-  blue_text $INITIAL_TEXT
+  blue_text "${INITIAL_TEXT}"
 }
 
 function download_libs () {
@@ -157,6 +157,67 @@ EOF
   sudo cp -v ${TMP_PATH}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
 }
 
+function modified_html () {
+  cat > ${TMP_PATH}/index.html.newbie << EOF
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx! Installed with Newbie Installer</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<h2>Installed with Newbie Installer</h2>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+<p>For online documentation please refer to
+<a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.<br/>
+
+<p><em>Thank you for using nginx with install <a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.</em></p>
+</body>
+</html>
+EOF
+  cat > ${TMP_PATH}/50x.html.newbie << EOF
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <title>Error</title>
+  <style>
+      body {
+          width: 35em;
+          margin: 0 auto;
+          font-family: Tahoma, Verdana, Arial, sans-serif;
+      }
+  </style>
+  </head>
+  <body>
+  <h1>An error occurred.</h1>
+  <p>Sorry, the page you are looking for is currently unavailable.<br/>
+  Please try again later.</p>
+  <p>If you are the system administrator of this resource then you should check
+  the error log for details.</p>
+  <p><em>Faithfully yours, nginx.</em></p>
+
+  <p><em>Thank you for using nginx with <a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.</em></p>
+  </body>
+  </html>
+EOF
+  has_sudo
+  sudo cp ${TMP_PATH}/50x.html.newbie /usr/share/nginx/html/50x.html
+  sudo cp ${TMP_PATH}/index.html.newbie /usr/share/nginx/html/index.html
+}
+
 function final_adjustments () {
   has_sudo
   sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
@@ -166,6 +227,7 @@ function final_adjustments () {
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -p /etc/nginx/conf.d
   nginx_conf_default
+  modified_html
 }
 
 function  create_user () {
@@ -357,7 +419,7 @@ function nginx_compile_menu () {
      9) create_service ;;
      10) run_service ;;
      a) execute_nginx_compile ;;
-     q) exit ;;
+     q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
     read input
