@@ -101,7 +101,8 @@ EOF
 }
 
 function configure_nginx () {
-  .${TMP_PATH}/${NGINX_VERSION}/configure --prefix=/etc/nginx \
+  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  ./configure --prefix=/etc/nginx \
             --sbin-path=/usr/sbin/nginx \
             --modules-path=/usr/lib64/nginx/modules \
             --conf-path=/etc/nginx/nginx.conf \
@@ -158,6 +159,7 @@ function configure_nginx () {
             --with-zlib-asm=CPU \
             --with-libatomic \
             --with-debug
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 

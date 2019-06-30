@@ -31,31 +31,34 @@ if is_root; then
 fi
 
 NEWBIE_INSTALLER_PATH=$(pwd)
+function runs_rookie_menu () {
+  trap '' 2  # ignore control + c
+  while true
+  do
+    local answer
+    local input
+    clear # clear screen for each loop of menu
+    echo "================================"
+    echo "================================"
+    echo "-------------      -------------"
+    echo "------------- Menu -------------"
+    echo "------- Newbie Installer -------"
+    echo "-------                  -------"
+    echo "----------- Distro   -----------"
+    what_distribution_are_you
+    echo "================================"
+    echo "================================"
+    echo "Enter 1 compile Nginx:"
+    echo "Enter q to quit q:"
+    echo -e "Enter your selection here and hit <return>"
+    read answer
+    case "$answer" in
+     1) execute_nginx_compile;;
+     q) exit ;;
+    esac
+    echo -e "Hit the <return> key to continue"
+    read input
+  done
+}
 
-trap '' 2  # ignore control + c
-while true
-do
-  local answer
-  local input
-  clear # clear screen for each loop of menu
-  echo "================================"
-  echo "================================"
-  echo "-------------      -------------"
-  echo "------------- Menu -------------"
-  echo "------- Newbie Installer -------"
-  echo "-------                  -------"
-  echo "----------- Distro   -----------"
-  what_distribution_are_you
-  echo "================================"
-  echo "================================"
-  echo "Enter 1 compile Nginx:"
-  echo "Enter q to quit q:"
-  echo -e "Enter your selection here and hit <return>"
-  read answer
-  case "$answer" in
-   1) execute_nginx_compile;;
-   q) exit ;;
-  esac
-  echo -e "Hit the <return> key to continue"
-  read input
-done
+runs_rookie_menu
