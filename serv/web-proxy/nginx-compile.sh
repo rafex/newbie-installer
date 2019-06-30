@@ -28,34 +28,34 @@ NGINX_INSTALLATION_PATH="/opt/nginx"
 NGINX_USER="nginx"
 TMP_PATH="/tmp"
 
-local zlib="zlib-1.2.11.tar.gz"
-local libressl="libressl-2.9.2.tar.gz"
-local pcre="pcre-8.43.tar.gz"
-local nginx_version="1.17.1"
-local nginx_src="nginx-${nginx_version}.tar.gz"
+ZLIB_SRC="zlib-1.2.11.tar.gz"
+LIBRESSL_SRC="libressl-2.9.2.tar.gz"
+PCRE_SRC="pcre-8.43.tar.gz"
+NGINX_VERSION="1.17.1"
+NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 function nginx_hello () {
   blue_text $INITIAL_TEXT
 }
 
 function download_libs () {
-  curl https://www.zlib.net/$zlib --output $TMP_PATH/$zlib --silent
-  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$pcre --output $TMP_PATH/$pcre --silent
-  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$libressl --output $TMP_PATH/$libressl --silent
+  curl https://www.zlib.net/$ZLIB_SRC --output $TMP_PATH/$ZLIB_SRC --silent
+  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output $TMP_PATH/$PCRE_SRC --silent
+  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output $TMP_PATH/$LIBRESSL_SRC --silent
 }
 
 function download_nginx () {
-  curl https://nginx.org/download/$nginx_src --output $TMP_PATH/$nginx_src --silent
+  curl https://nginx.org/download/$NGINX_SRC --output $TMP_PATH/$NGINX_SRC --silent
 }
 
 function unpackage_libs () {
-  tar -xvf $TMP_PATH/$zlib
-  tar -xvf $TMP_PATH/$pcre
-  tar -xvf $TMP_PATH/$libressl
+  tar -xvf $TMP_PATH/$ZLIB_SRC
+  tar -xvf $TMP_PATH/$PCRE_SRC
+  tar -xvf $TMP_PATH/$LIBRESSL_SRC
 }
 
 function unpackage_nginx () {
-  tar -xvf $TMP_PATH/$nginx_src
+  tar -xvf $TMP_PATH/$NGINX_SRC
 }
 
 # mkdir -p $NGINX_INSTALLATION_PATH

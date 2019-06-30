@@ -20,18 +20,7 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-is_root () {
-    return $(id -u)
-}
+find . -type f -iname "*.sh" -exec chmod +x {} +
+# find . -type f -iname "*.sh" -exec chmod +x {} \;
 
-has_sudo() {
-    local prompt
-    prompt=$(sudo -nv 2>&1)
-    if [ $? -eq 0 ]; then
-    return 0
-    elif echo $prompt | grep -q '^sudo:'; then
-    return 1
-    else
-    return 2
-    fi
-}
+tar -zcvf scripts.tar.gz * --exclude=.DS_Store --exclude=.git*

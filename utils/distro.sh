@@ -20,18 +20,15 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-is_root () {
-    return $(id -u)
-}
+DISTRO_DEBIAN="Debian"
+DISTRO_CENTOS="Centos"
+RULZZ="rulzz!!"
 
-has_sudo() {
-    local prompt
-    prompt=$(sudo -nv 2>&1)
-    if [ $? -eq 0 ]; then
-    return 0
-    elif echo $prompt | grep -q '^sudo:'; then
-    return 1
-    else
-    return 2
-    fi
+function what_distribution_are_you () {
+  local distro=$(awk -F= '/^NAME/{print $2}' /etc/*release*)
+  if [[ $distro == *${DISTRO_DEBIAN}* ]]; then
+    echo $DISTRO_DEBIAN
+  elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
+    echo $DISTRO_CENTOS
+  fi
 }

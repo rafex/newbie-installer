@@ -22,6 +22,7 @@
 
 . utils/is-root.sh
 . utils/color.sh
+. utils/distro.sh
 . serv/web-proxy/nginx-compile.sh
 
 if is_root; then
