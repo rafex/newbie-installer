@@ -47,7 +47,7 @@ do
   echo -e "Enter your selection here and hit <return>"
   read answer
   case "$answer" in
-   1) nginx_hello;;
+   1) execute_nginx_compile;;
    q) exit ;;
   esac
   echo -e "Hit the <return> key to continue"

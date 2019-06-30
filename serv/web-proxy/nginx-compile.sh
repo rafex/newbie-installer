@@ -65,7 +65,7 @@ function  create_user () {
   usermod -s /sbin/nologin $NGINX_USER
 }
 
-function execute () {
+function execute_nginx_compile () {
   download_libs
   download_nginx
   unpackage_libs
