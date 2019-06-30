@@ -43,23 +43,23 @@ function nginx_hello () {
 }
 
 function download_libs () {
-  curl https://www.zlib.net/$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC} --silent
-  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC} --silent
-  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC} --silent
+  curl https://www.zlib.net/$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
+  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
+  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
 }
 
 function download_nginx () {
-  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH}/${NGINX_SRC} --silent
+  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH}/${NGINX_SRC}
 }
 
 function unpackage_libs () {
-  tar -xvf ${TMP_PATH}/${ZLIB_SRC}
-  tar -xvf ${TMP_PATH}/${PCRE_SRC}
-  tar -xvf ${TMP_PATH}/${LIBRESSL_SRC}
+  tar -xvf ${TMP_PATH}/${ZLIB_SRC} -C ${TMP_PATH}
+  tar -xvf ${TMP_PATH}/${PCRE_SRC} -C ${TMP_PATH}
+  tar -xvf ${TMP_PATH}/${LIBRESSL_SRC} -C ${TMP_PATH}
 }
 
 function unpackage_nginx () {
-  tar -xvf ${TMP_PATH}/${NGINX_SRC}
+  tar -xvf ${TMP_PATH}/${NGINX_SRC} -C ${TMP_PATH}
 }
 
 # mkdir -p $NGINX_INSTALLATION_PATH
@@ -101,7 +101,7 @@ EOF
 }
 
 function configure_nginx () {
-  local config_nginx = "--prefix=/etc/nginx \
+  .${TMP_PATH}/${NGINX_VERSION}/configure --prefix=/etc/nginx \
             --sbin-path=/usr/sbin/nginx \
             --modules-path=/usr/lib64/nginx/modules \
             --conf-path=/etc/nginx/nginx.conf \
@@ -157,24 +157,22 @@ function configure_nginx () {
             --with-zlib=${TMP_PATH}/${ZLIB_VERSION} \
             --with-zlib-asm=CPU \
             --with-libatomic \
-            --with-debug"
-
-            .${TMP_PATH}/${NGINX_VERSION}/configure $config_nginx
+            --with-debug
 }
 
 
 
 function execute_nginx_compile () {
   download_libs
-  sleep 3
+  sleep 1
   download_nginx
-  sleep 3
+  sleep 1
   unpackage_libs
-  sleep 3
+  sleep 1
   unpackage_nginx
-  sleep 3
+  sleep 1
   configure_nginx
-  sleep 3
+  sleep 2
 }
 
 nginx_hello
