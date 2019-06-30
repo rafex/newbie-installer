@@ -33,5 +33,6 @@ has_sudo () {
     blue_text "you need to authenticate!!! @-)"
     else
     red_text "You do not have privileges, I'm sorry!!! U.U"
+    exit
     fi
 }

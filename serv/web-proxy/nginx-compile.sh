@@ -64,11 +64,13 @@ function unpackage_nginx () {
 }
 
 function install_dependencies_for_debian () {
+  has_sudo
   red_text "Install dependencies for Debian"
   sudo apt install libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
 }
 
 function install_dependencies_for_centos () {
+  has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum install libxml2-dev libxslt1-dev libgd-dev
 }
@@ -83,8 +85,8 @@ function install_dependencies () {
 }
 
 function nginx_conf_default () {
-  sudo cat > /etc/systemd/system/nginx.service << EOF
-  user  nginx;
+  cat > ${TMP_PATH}/nginx.conf.newbie << EOF
+  user  ${NGINX_USER};
   worker_processes  4;
 
   error_log  /var/log/nginx/error.log warn;
@@ -101,9 +103,9 @@ function nginx_conf_default () {
       include	  /etc/nginx/mime.types;
       default_type  application/octet-stream;
 
-      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                        '$status $body_bytes_sent "$http_referer" '
-                        '"$http_user_agent" "$http_x_forwarded_for"';
+      log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+                        '\$status \$body_bytes_sent "\$http_referer" '
+                        '"\$http_user_agent" "\$http_x_forwarded_for"';
 
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
@@ -119,23 +121,61 @@ function nginx_conf_default () {
       include   /etc/nginx/conf.d/*.conf;
   }
 EOF
+  cat > ${TMP_PATH}/default-site.conf.newbie << EOF
+  server {
+      listen       80;
+      listen       localhost:80;
+      server_name  localhost;
+
+      charset koi8-r;
+      access_log  /var/log/nginx/host.access.log  main;
+
+      location / {
+          root   /usr/share/nginx/html;
+          index  index.html index.htm;
+      }
+
+      #error_page  404              /404.html;
+
+      # redirect server error pages to the static page /50x.html
+      #
+      error_page   500 502 503 504  /50x.html;
+      location = /50x.html {
+          root   /usr/share/nginx/html;
+      }
+
+      # deny access to .htaccess files, if Apache's document root
+      # concurs with nginx's one
+      #
+      location ~ /\.ht {
+          deny  all;
+      }
+  }
+EOF
+  has_sudo
+  sudo cp -v ${TMP_PATH}/nginx.conf.newbie /etc/nginx/nginx.conf
+  sudo cp -v ${TMP_PATH}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
 }
 
 function final_adjustments () {
+  has_sudo
   sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
   sudo mkdir -p /usr/share/nginx
   sudo mv -v /etc/nginx/html /usr/share/nginx/html
   sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -p /etc/nginx/conf.d
+  nginx_conf_default
 }
 
 function  create_user () {
+  has_sudo
   sudo useradd --system $NGINX_USER
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 
 function create_folders () {
+  has_sudo
   sudo mkdir -p /var/cache/nginx/
   sudo mkdir -p /var/log/nginx/
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
@@ -143,7 +183,7 @@ function create_folders () {
 }
 
 function create_service () {
-  sudo cat > /etc/systemd/system/nginx.service << EOF
+  cat > ${TMP_PATH}/nginx.service.newbie << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
 Documentation=https://nginx.org/en/docs/
@@ -155,12 +195,14 @@ Type=forking
 PIDFile=/var/run/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
-ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MAINPID
+ExecReload=/bin/kill -s HUP \$MAINPID
+ExecStop=/bin/kill -s TERM \$MAINPID
 
 [Install]
 WantedBy=multi-user.target
 EOF
+  has_sudo
+  sudo cp -v ${TMP_PATH}/nginx.service.newbie /etc/systemd/system/nginx.service
   sudo chmod 755 /etc/systemd/system/nginx.service
   sudo systemctl daemon-reload
   sudo systemctl enable nginx.service
@@ -235,6 +277,7 @@ function make_nginx () {
 }
 
 function make_install_nginx () {
+  has_sudo
   cd ${TMP_PATH}/nginx-${NGINX_VERSION}
   sudo make install
   cd $NEWBIE_INSTALLER_PATH
@@ -242,7 +285,11 @@ function make_install_nginx () {
   create_user
   create_folders
   final_adjustments
+}
 
+function run_service () {
+  has_sudo
+  sudo systemctl start nginx
 }
 
 function execute_nginx_compile () {
@@ -254,7 +301,6 @@ function execute_nginx_compile () {
   sleep 1
   unpackage_nginx
   sleep 1
-  has_sudo
   install_dependencies
   sleep 1
   configure_nginx
@@ -292,6 +338,7 @@ function nginx_compile_menu () {
     echo "Enter 7) Make"
     echo "Enter 8) Make install"
     echo "Enter 9) Create service"
+    echo "Enter 10) Start service"
     echo "Enter a) All"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
@@ -306,6 +353,7 @@ function nginx_compile_menu () {
      7) make_nginx;;
      8) make_install_nginx;;
      9) create_service ;;
+     10) ;;
      a) execute_nginx_compile ;;
      q) exit ;;
     esac
