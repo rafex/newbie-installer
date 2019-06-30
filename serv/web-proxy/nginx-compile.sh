@@ -310,6 +310,8 @@ function execute_nginx_compile () {
   make_install_nginx
   sleep 2
   create_service
+  sleep 1
+  run_service
 }
 
 function nginx_compile_menu () {
@@ -353,7 +355,7 @@ function nginx_compile_menu () {
      7) make_nginx;;
      8) make_install_nginx;;
      9) create_service ;;
-     10) ;;
+     10) run_service ;;
      a) execute_nginx_compile ;;
      q) exit ;;
     esac
