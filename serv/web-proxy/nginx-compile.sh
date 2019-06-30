@@ -26,11 +26,15 @@
 INITIAL_TEXT="Load module nginx compile"
 NGINX_INSTALLATION_PATH="/opt/nginx"
 NGINX_USER="nginx"
+NGINX_GROUP="nginx"
 TMP_PATH="/tmp"
 
-ZLIB_SRC="zlib-1.2.11.tar.gz"
-LIBRESSL_SRC="libressl-2.9.2.tar.gz"
-PCRE_SRC="pcre-8.43.tar.gz"
+ZLIB_VERSION="zlib-1.2.11"
+ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
+LIBRESSL_VERSION="libressl-2.9.2"
+LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
+PCRE_VERSION="pcre-8.43"
+PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.1"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
@@ -39,23 +43,23 @@ function nginx_hello () {
 }
 
 function download_libs () {
-  curl https://www.zlib.net/$ZLIB_SRC --output $TMP_PATH/$ZLIB_SRC --silent
-  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output $TMP_PATH/$PCRE_SRC --silent
-  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output $TMP_PATH/$LIBRESSL_SRC --silent
+  curl https://www.zlib.net/$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC} --silent
+  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC} --silent
+  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC} --silent
 }
 
 function download_nginx () {
-  curl https://nginx.org/download/$NGINX_SRC --output $TMP_PATH/$NGINX_SRC --silent
+  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH}/${NGINX_SRC} --silent
 }
 
 function unpackage_libs () {
-  tar -xvf $TMP_PATH/$ZLIB_SRC
-  tar -xvf $TMP_PATH/$PCRE_SRC
-  tar -xvf $TMP_PATH/$LIBRESSL_SRC
+  tar -xvf ${TMP_PATH}/${ZLIB_SRC}
+  tar -xvf ${TMP_PATH}/${PCRE_SRC}
+  tar -xvf ${TMP_PATH}/${LIBRESSL_SRC}
 }
 
 function unpackage_nginx () {
-  tar -xvf $TMP_PATH/$NGINX_SRC
+  tar -xvf ${TMP_PATH}/${NGINX_SRC}
 }
 
 # mkdir -p $NGINX_INSTALLATION_PATH
@@ -65,11 +69,112 @@ function  create_user () {
   usermod -s /sbin/nologin $NGINX_USER
 }
 
+function create_folder () {
+  mkdir -p /var/cache/nginx/
+  mkdir -p /var/log/nginx/
+  chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
+  chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
+}
+
+function create_service () {
+  cat > /etc/systemd/system/nginx.service << EOF
+[Unit]
+Description=Nginx ${NGINX_VERSION}
+Documentation=https://nginx.org/en/docs/
+After=network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  chmod 755 /etc/systemd/system/nginx.service
+  systemctl daemon-reload
+  systemctl enable nginx.service
+}
+
+function configure_nginx () {
+  local config_nginx = "--prefix=/etc/nginx \
+            --sbin-path=/usr/sbin/nginx \
+            --modules-path=/usr/lib64/nginx/modules \
+            --conf-path=/etc/nginx/nginx.conf \
+            --error-log-path=/var/log/nginx/error.log \
+            --http-log-path=/var/log/nginx/access.log \
+            --pid-path=/var/run/nginx.pid \
+            --lock-path=/var/run/nginx.lock \
+            --user=$NGINX_USER \
+            --group=$NGINX_GROUP \
+            --build=Debian \
+            --builddir=nginx-${NGINX_VERSION} \
+            --with-select_module \
+            --with-poll_module \
+            --with-threads \
+            --with-file-aio \
+            --with-http_ssl_module \
+            --with-http_v2_module \
+            --with-http_realip_module \
+            --with-http_addition_module \
+            --with-http_xslt_module=dynamic \
+            --with-google_perftools_module \
+            --with-http_image_filter_module=dynamic \
+            --with-http_geoip_module=dynamic \
+            --with-http_sub_module \
+            --with-http_dav_module \
+            --with-http_flv_module \
+            --with-http_mp4_module \
+            --with-http_gunzip_module \
+            --with-http_gzip_static_module \
+            --with-http_auth_request_module \
+            --with-http_random_index_module \
+            --with-http_secure_link_module \
+            --with-http_degradation_module \
+            --with-http_slice_module \
+            --with-http_stub_status_module \
+            --http-client-body-temp-path=/var/cache/nginx/client_temp \
+            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+            --with-mail=dynamic \
+            --with-mail_ssl_module \
+            --with-stream=dynamic \
+            --with-stream_ssl_module \
+            --with-stream_realip_module \
+            --with-stream_geoip_module=dynamic \
+            --with-stream_ssl_preread_module \
+            --with-compat \
+            --with-pcre=${TMP_PATH}/${PCRE_VERSION} \
+            --with-pcre-jit \
+            --with-openssl=${TMP_PATH}/${LIBRESSL_VERSION} \
+            --with-openssl-opt=no-nextprotoneg \
+            --with-zlib=${TMP_PATH}/${ZLIB_VERSION} \
+            --with-zlib-asm=CPU \
+            --with-libatomic \
+            --with-debug"
+
+            .${TMP_PATH}/${NGINX_VERSION}/configure $config_nginx
+}
+
+
+
 function execute_nginx_compile () {
   download_libs
+  sleep 3
   download_nginx
+  sleep 3
   unpackage_libs
+  sleep 3
   unpackage_nginx
+  sleep 3
+  configure_nginx
+  sleep 3
 }
 
 nginx_hello

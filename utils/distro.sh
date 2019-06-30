@@ -21,7 +21,7 @@
 # Written by: Raúl González <rafex.dev@gmail.com>
 
 DISTRO_DEBIAN="Debian"
-DISTRO_CENTOS="Centos"
+DISTRO_CENTOS="CentOS"
 RULZZ="rulzz!!"
 
 function what_distribution_are_you () {

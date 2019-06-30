@@ -30,6 +30,8 @@ if is_root; then
     exit 1
 fi
 
+NEWBIE_INSTALLER_PATH=$(pwd)
+
 trap '' 2  # ignore control + c
 while true
 do
@@ -41,6 +43,9 @@ do
   echo "-------------      -------------"
   echo "------------- Menu -------------"
   echo "------- Newbie Installer -------"
+  echo "-------                  -------"
+  echo "----------- Distro   -----------"
+  what_distribution_are_you
   echo "================================"
   echo "================================"
   echo "Enter 1 compile Nginx:"
