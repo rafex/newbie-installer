@@ -66,13 +66,15 @@ function unpackage_nginx () {
 function install_dependencies_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
-  sudo apt -y install build-essential libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
+  sudo apt -y install build-essential
+  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
 }
 
 function install_dependencies_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
-  sudo yum install libxml2-dev libxslt1-dev libgd-dev
+  sudo yum -y groupinstall "Development Tools"
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel
 }
 
 function install_dependencies () {
@@ -377,6 +379,17 @@ function execute_nginx_compile () {
 }
 
 function nginx_compile_menu () {
+  local option_1="Download libs"
+  local option_2="Download Nginx"
+  local option_3="Unpackage libs"
+  local option_4="Unpackage Nginx"
+  local option_5="Install dependencies"
+  local option_6="Configure"
+  local option_7="Make"
+  local option_8="Make install"
+  local option_9="Create service"
+  local option_10="Start service"
+  local option_all="All"
   trap '' 2  # ignore control + c
   while true
   do
@@ -393,32 +406,32 @@ function nginx_compile_menu () {
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"
-    echo "Enter 1) Download libs"
-    echo "Enter 2) Download Nginx"
-    echo "Enter 3) Unpackage libs"
-    echo "Enter 4) Unpackage Nginx"
-    echo "Enter 5) Install dependencies"
-    echo "Enter 6) Configure"
-    echo "Enter 7) Make"
-    echo "Enter 8) Make install"
-    echo "Enter 9) Create service"
-    echo "Enter 10) Start service"
-    echo "Enter a) All"
+    echo "Enter 1) ${option_1}"
+    echo "Enter 2) ${option_2}"
+    echo "Enter 3) ${option_3}"
+    echo "Enter 4) ${option_4}"
+    echo "Enter 5) ${option_5}"
+    echo "Enter 6) ${option_6}"
+    echo "Enter 7) ${option_7}"
+    echo "Enter 8) ${option_8}"
+    echo "Enter 9) ${option_9}"
+    echo "Enter 10) ${option_10}"
+    echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs ;;
-     2) download_nginx ;;
-     3) unpackage_libs ;;
-     4) unpackage_nginx ;;
-     5) install_dependencies ;;
-     6) configure_nginx ;;
-     7) make_nginx;;
-     8) make_install_nginx;;
-     9) create_service ;;
-     10) run_service ;;
-     a) execute_nginx_compile ;;
+     1) download_libs && green_text "Finished ${option_1}" ;;
+     2) download_nginx && green_text "Finished ${option_2}" ;;
+     3) unpackage_libs && green_text "Finished ${option_3}" ;;
+     4) unpackage_nginx && green_text "Finished ${option_4}" ;;
+     5) install_dependencies && green_text "Finished ${option_5}" ;;
+     6) configure_nginx && green_text "Finished ${option_6}" ;;
+     7) make_nginx && green_text "Finished ${option_7}" ;;
+     8) make_install_nginx && green_text "Finished ${option_8}" ;;
+     9) create_service && green_text "Finished ${option_9}" ;;
+     10) run_service && green_text "Finished ${option_10}" ;;
+     a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
