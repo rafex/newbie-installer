@@ -40,7 +40,7 @@ NGINX_VERSION="1.17.1"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 function nginx_hello () {
-  blue_text $INITIAL_TEXT
+  blue_text "${INITIAL_TEXT}"
 }
 
 function download_libs () {
@@ -173,6 +173,7 @@ function modified_html () {
 </head>
 <body>
 <h1>Welcome to nginx!</h1>
+<h2>Installed with Newbie Installer</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
 
@@ -183,7 +184,7 @@ Commercial support is available at
 <p>For online documentation please refer to
 <a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.<br/>
 
-<p><em>Thank you for using nginx with <a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.</em></p>
+<p><em>Thank you for using nginx with install <a href="https://github.com/rafex/newbie-installer">Newbie Installer</a>.</em></p>
 </body>
 </html>
 EOF
@@ -226,6 +227,7 @@ function final_adjustments () {
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -p /etc/nginx/conf.d
   nginx_conf_default
+  modified_html
 }
 
 function  create_user () {
@@ -417,7 +419,7 @@ function nginx_compile_menu () {
      9) create_service ;;
      10) run_service ;;
      a) execute_nginx_compile ;;
-     q) exit ;;
+     q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
     read input

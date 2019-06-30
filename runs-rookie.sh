@@ -23,6 +23,7 @@
 . utils/is-root.sh
 . utils/color.sh
 . utils/distro.sh
+. utils/exit.sh
 . serv/web-proxy/nginx-compile.sh
 
 if is_root; then
@@ -58,7 +59,7 @@ function runs_rookie_menu () {
     read answer
     case "$answer" in
      1) nginx_compile_menu ;;
-     q) exit ;;
+     q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
     read input
