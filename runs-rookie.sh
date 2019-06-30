@@ -46,6 +46,7 @@ function runs_rookie_menu () {
     echo "-------                  -------"
     echo "----------- Distro   -----------"
     what_distribution_are_you
+    echo "-----------          -----------"
     echo "================================"
     echo "================================"
     echo "Enter 1 compile Nginx:"
@@ -53,7 +54,7 @@ function runs_rookie_menu () {
     echo -e "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) execute_nginx_compile;;
+     1) execute_nginx_compile ;;
      q) exit ;;
     esac
     echo -e "Hit the <return> key to continue"

@@ -62,7 +62,9 @@ function unpackage_nginx () {
   tar -xvf ${TMP_PATH}/${NGINX_SRC} -C ${TMP_PATH}
 }
 
-# mkdir -p $NGINX_INSTALLATION_PATH
+function install_dependencies () {
+  apt install libxslt1-dev libxml2-dev
+}
 
 function  create_user () {
   useradd --system $NGINX_USER
@@ -173,8 +175,10 @@ function execute_nginx_compile () {
   sleep 1
   unpackage_nginx
   sleep 1
-  configure_nginx
-  sleep 2
+  install_dependencies
+  sleep 1
+  # configure_nginx
+  # sleep 2
 }
 
 nginx_hello
