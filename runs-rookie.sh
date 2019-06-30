@@ -26,7 +26,7 @@
 . serv/web-proxy/nginx-compile.sh
 
 if is_root; then
-    echo "Error: need to call this script as a normal user, not as root!"
+    red_text "Error: need to call this script as a normal user, not as root!"
     exit 1
 fi
 
@@ -41,23 +41,23 @@ function runs_rookie_menu () {
     echo "================================"
     echo "================================"
     echo "-------------      -------------"
-    echo "------------- Menu -------------"
-    echo "------- Newbie Installer -------"
+    blue_text "------------- Menu -------------"
+    blue_text "------- Newbie Installer -------"
     echo "-------                  -------"
-    echo "----------- Distro   -----------"
+    green_text "----------- Distro   -----------"
     what_distribution_are_you
     echo "-----------          -----------"
     echo "================================"
     echo "================================"
-    echo "Enter 1 compile Nginx:"
-    echo "Enter q to quit q:"
-    echo -e "Enter your selection here and hit <return>"
+    echo "Enter 1) Nginx compile"
+    echo "Enter q) Quit"
+    yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) execute_nginx_compile ;;
+     1) nginx_compile_menu ;;
      q) exit ;;
     esac
-    echo -e "Hit the <return> key to continue"
+    red_text "Hit the <return> key to continue"
     read input
   done
 }

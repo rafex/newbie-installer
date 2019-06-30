@@ -24,6 +24,7 @@
 # . ../../utils/is-root.sh
 
 INITIAL_TEXT="Load module nginx compile"
+NAME_OF_THE_MODULE="Nginx compile"
 NGINX_INSTALLATION_PATH="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
@@ -63,12 +64,12 @@ function unpackage_nginx () {
 }
 
 function install_dependencies () {
-  apt install libxslt1-dev libxml2-dev
+  sudo apt install libxml2-dev
 }
 
 function  create_user () {
-  useradd --system $NGINX_USER
-  usermod -s /sbin/nologin $NGINX_USER
+  sudo useradd --system $NGINX_USER
+  sudo usermod -s /sbin/nologin $NGINX_USER
 }
 
 function create_folder () {
@@ -175,10 +176,51 @@ function execute_nginx_compile () {
   sleep 1
   unpackage_nginx
   sleep 1
+  has_sudo
   install_dependencies
   sleep 1
-  # configure_nginx
-  # sleep 2
+  configure_nginx
+  sleep 2
+}
+
+function nginx_compile_menu () {
+  trap '' 2  # ignore control + c
+  while true
+  do
+    local answer
+    local input
+    clear # clear screen for each loop of menu
+    echo "================================"
+    echo "================================"
+    echo "-------------      -------------"
+    blue_text "----------- Distro   -----------"
+    what_distribution_are_you
+    echo "-----------          -----------"
+    red_text "${NAME_OF_THE_MODULE}"
+    echo "-----------          -----------"
+    echo "================================"
+    echo "================================"
+    echo "Enter 1) Download libs"
+    echo "Enter 2) Download Nginx"
+    echo "Enter 3) Unpackage libs"
+    echo "Enter 4) Unpackage Nginx"
+    echo "Enter 5) Install dependencies"
+    echo "Enter a) All"
+    echo "Enter q) Quit"
+    yellow_text "Enter your selection here and hit <return>"
+    read answer
+    case "$answer" in
+     1) download_libs ;;
+     2) download_nginx ;;
+     3) unpackage_libs ;;
+     4) unpackage_nginx ;;
+     5) install_dependencies ;;
+     a) execute_nginx_compile ;;
+     q) exit ;;
+    esac
+    red_text "Hit the <return> key to continue"
+    read input
+  done
 }
 
 nginx_hello

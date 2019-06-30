@@ -24,14 +24,14 @@ is_root () {
     return $(id -u)
 }
 
-has_sudo() {
+has_sudo () {
     local prompt
     prompt=$(sudo -nv 2>&1)
     if [ $? -eq 0 ]; then
-    return 0
+    green_text "you have privileges!! :-)"
     elif echo $prompt | grep -q '^sudo:'; then
-    return 1
+    blue_text "you need to authenticate!!! @-)"
     else
-    return 2
+    red_text "You do not have privileges, I'm sorry!!! U.U"
     fi
 }
