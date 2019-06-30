@@ -65,7 +65,7 @@ function unpackage_nginx () {
 
 function install_dependencies_for_debian () {
   red_text "Install dependencies for Debian"
-  sudo apt install libxml2-dev libxslt1-dev libgd-dev
+  sudo apt install libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
 }
 
 function install_dependencies_for_centos () {
@@ -80,7 +80,54 @@ function install_dependencies () {
     CentOS) install_dependencies_for_centos ;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
+}
 
+function nginx_conf_default () {
+  sudo cat > /etc/systemd/system/nginx.service << EOF
+  user  nginx;
+  worker_processes  4;
+
+  error_log  /var/log/nginx/error.log warn;
+  pid        /var/run/nginx.pid;
+
+
+  events {
+      worker_connections  1024;
+      use epoll;
+      multi_accept on;
+  }
+
+  http {
+      include	  /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log  /var/log/nginx/access.log  main;
+      sendfile        on;
+      #tcp_nopush     on;
+      keepalive_timeout  65;
+      gzip on;
+      gzip_disable "msie6";
+      gzip_vary on;
+      gzip_proxied any;
+      gzip_comp_level 9;
+      gzip_buffers 16 8k;
+      gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+      include   /etc/nginx/conf.d/*.conf;
+  }
+EOF
+}
+
+function final_adjustments () {
+  sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
+  sudo mkdir -p /usr/share/nginx
+  sudo mv -v /etc/nginx/html /usr/share/nginx/html
+  sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
+  sudo rm -rfv /etc/nginx/*.default
+  sudo mkdir -p /etc/nginx/conf.d
 }
 
 function  create_user () {
@@ -88,7 +135,7 @@ function  create_user () {
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 
-function create_folder () {
+function create_folders () {
   sudo mkdir -p /var/cache/nginx/
   sudo mkdir -p /var/log/nginx/
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
@@ -96,7 +143,7 @@ function create_folder () {
 }
 
 function create_service () {
-  cat > /etc/systemd/system/nginx.service << EOF
+  sudo cat > /etc/systemd/system/nginx.service << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
 Documentation=https://nginx.org/en/docs/
@@ -114,9 +161,9 @@ ExecStop=/bin/kill -s TERM $MAINPID
 [Install]
 WantedBy=multi-user.target
 EOF
-  chmod 755 /etc/systemd/system/nginx.service
-  systemctl daemon-reload
-  systemctl enable nginx.service
+  sudo chmod 755 /etc/systemd/system/nginx.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable nginx.service
 }
 
 function configure_nginx () {
@@ -181,7 +228,22 @@ function configure_nginx () {
   cd $NEWBIE_INSTALLER_PATH
 }
 
+function make_nginx () {
+  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  make
+  cd $NEWBIE_INSTALLER_PATH
+}
 
+function make_install_nginx () {
+  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  sudo make install
+  cd $NEWBIE_INSTALLER_PATH
+
+  create_user
+  create_folders
+  final_adjustments
+
+}
 
 function execute_nginx_compile () {
   download_libs
@@ -197,6 +259,11 @@ function execute_nginx_compile () {
   sleep 1
   configure_nginx
   sleep 2
+  make_nginx
+  sleep 2
+  make_install_nginx
+  sleep 2
+  create_service
 }
 
 function nginx_compile_menu () {
@@ -222,6 +289,9 @@ function nginx_compile_menu () {
     echo "Enter 4) Unpackage Nginx"
     echo "Enter 5) Install dependencies"
     echo "Enter 6) Configure"
+    echo "Enter 7) Make"
+    echo "Enter 8) Make install"
+    echo "Enter 9) Create service"
     echo "Enter a) All"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
@@ -233,6 +303,9 @@ function nginx_compile_menu () {
      4) unpackage_nginx ;;
      5) install_dependencies ;;
      6) configure_nginx ;;
+     7) make_nginx;;
+     8) make_install_nginx;;
+     9) create_service ;;
      a) execute_nginx_compile ;;
      q) exit ;;
     esac
