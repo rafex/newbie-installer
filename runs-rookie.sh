@@ -38,8 +38,8 @@ function runs_rookie_menu () {
     local answer
     local input
     clear # clear screen for each loop of menu
-    echo "================================"
-    echo "================================"
+    green_text "================================"
+    green_text "================================"
     echo "-------------      -------------"
     blue_text "------------- Menu -------------"
     blue_text "------- Newbie Installer -------"
@@ -47,10 +47,10 @@ function runs_rookie_menu () {
     green_text "----------- Distro   -----------"
     what_distribution_are_you
     echo "-----------          -----------"
-    echo "================================"
-    echo "================================"
+    green_text "================================"
+    green_text "================================"
     echo "Enter 1) Nginx compile"
-    echo "Enter q) Quit"
+    red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in

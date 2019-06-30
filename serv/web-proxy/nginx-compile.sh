@@ -64,7 +64,7 @@ function unpackage_nginx () {
 }
 
 function install_dependencies () {
-  sudo apt install libxml2-dev
+  sudo apt install libxml2-dev libxslt1-dev
 }
 
 function  create_user () {
@@ -73,10 +73,10 @@ function  create_user () {
 }
 
 function create_folder () {
-  mkdir -p /var/cache/nginx/
-  mkdir -p /var/log/nginx/
-  chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
-  chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
+  sudo mkdir -p /var/cache/nginx/
+  sudo mkdir -p /var/log/nginx/
+  sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
+  sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
 
 function create_service () {
@@ -190,23 +190,24 @@ function nginx_compile_menu () {
     local answer
     local input
     clear # clear screen for each loop of menu
-    echo "================================"
-    echo "================================"
+    green_text "================================"
+    green_text "================================"
     echo "-------------      -------------"
     blue_text "----------- Distro   -----------"
     what_distribution_are_you
     echo "-----------          -----------"
     red_text "${NAME_OF_THE_MODULE}"
     echo "-----------          -----------"
-    echo "================================"
-    echo "================================"
+    green_text "================================"
+    green_text "================================"
     echo "Enter 1) Download libs"
     echo "Enter 2) Download Nginx"
     echo "Enter 3) Unpackage libs"
     echo "Enter 4) Unpackage Nginx"
     echo "Enter 5) Install dependencies"
+    echo "Enter 6) Configure"
     echo "Enter a) All"
-    echo "Enter q) Quit"
+    red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
@@ -215,6 +216,7 @@ function nginx_compile_menu () {
      3) unpackage_libs ;;
      4) unpackage_nginx ;;
      5) install_dependencies ;;
+     5) configure_nginx ;;
      a) execute_nginx_compile ;;
      q) exit ;;
     esac
