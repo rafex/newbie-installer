@@ -78,8 +78,8 @@ function install_dependencies_for_centos () {
 function install_dependencies () {
   local distro=$(what_distribution_are_you)
   case $distro in
-    Debian) install_dependencies_for_debian ;;
-    CentOS) install_dependencies_for_centos ;;
+    debian) install_dependencies_for_debian ;;
+    centos) install_dependencies_for_centos ;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
