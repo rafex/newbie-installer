@@ -226,6 +226,7 @@ function final_adjustments () {
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -p /etc/nginx/conf.d
   nginx_conf_default
+  modified_html
 }
 
 function  create_user () {
