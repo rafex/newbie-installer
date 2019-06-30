@@ -66,7 +66,7 @@ function unpackage_nginx () {
 function install_dependencies_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
-  sudo apt install libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
+  sudo apt -y install build-essential libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
 }
 
 function install_dependencies_for_centos () {
