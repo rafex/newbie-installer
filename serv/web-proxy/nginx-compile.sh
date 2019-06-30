@@ -63,8 +63,24 @@ function unpackage_nginx () {
   tar -xvf ${TMP_PATH}/${NGINX_SRC} -C ${TMP_PATH}
 }
 
+function install_dependencies_for_debian () {
+  red_text "Install dependencies for Debian"
+  sudo apt install libxml2-dev libxslt1-dev libgd-dev
+}
+
+function install_dependencies_for_centos () {
+  blue_text "Install dependencies for CentOS"
+  sudo yum install libxml2-dev libxslt1-dev libgd-dev
+}
+
 function install_dependencies () {
-  sudo apt install libxml2-dev libxslt1-dev
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    Debian) install_dependencies_for_debian ;;
+    CentOS) install_dependencies_for_centos ;;
+    *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
+  esac
+
 }
 
 function  create_user () {
@@ -216,7 +232,7 @@ function nginx_compile_menu () {
      3) unpackage_libs ;;
      4) unpackage_nginx ;;
      5) install_dependencies ;;
-     5) configure_nginx ;;
+     6) configure_nginx ;;
      a) execute_nginx_compile ;;
      q) exit ;;
     esac

@@ -29,7 +29,7 @@ if is_root; then
     red_text "Error: need to call this script as a normal user, not as root!"
     exit 1
 fi
-
+NEWBIE_INSTALLER_VERSION="0.1.0-SNAPSHOT"
 NEWBIE_INSTALLER_PATH=$(pwd)
 function runs_rookie_menu () {
   trap '' 2  # ignore control + c
@@ -38,6 +38,7 @@ function runs_rookie_menu () {
     local answer
     local input
     clear # clear screen for each loop of menu
+    red_text "Version: ${NEWBIE_INSTALLER_VERSION}"
     green_text "================================"
     green_text "================================"
     echo "-------------      -------------"
