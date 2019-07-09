@@ -50,7 +50,6 @@ function runs_rookie_menu () {
     green_text "================================"
     echo "-------------      -------------"
     blue_text "------------- Menu -------------"
-    blue_text "------- Serv -------"
     echo "-------                  -------"
     echo "-----------    OS    -----------"
     what_os_are_you

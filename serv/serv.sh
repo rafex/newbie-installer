@@ -19,9 +19,11 @@
 # Written by: Raúl González <rafex.dev@gmail.com>
 
 . web-proxy/web-proxy.sh
+. git/git.sh
 
 function serv_menu () {
-  local option_1="Nginx - compile and install"
+  local option_1="Web/Proxy"
+  local option_2="Git"
 
   trap '' 2  # ignore control + c
   while true
@@ -42,6 +44,7 @@ function serv_menu () {
     read answer
     case "$answer" in
      1) web_proxy_menu ;;
+     2) git_menu ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
