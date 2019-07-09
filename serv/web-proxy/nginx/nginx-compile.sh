@@ -232,7 +232,7 @@ function final_adjustments () {
 
 function  create_user () {
   has_sudo
-  sudo useradd --system $NGINX_USER
+  sudo useradd --system $NGINX_USER -d $NGINX_INSTALLATION_PATH
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 

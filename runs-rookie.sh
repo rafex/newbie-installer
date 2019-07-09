@@ -34,7 +34,7 @@ if is_root; then
     exit 1
 fi
 
-NEWBIE_INSTALLER_VERSION="0.1.0-SNAPSHOT"
+NEWBIE_INSTALLER_VERSION="0.1.9-SNAPSHOT"
 NEWBIE_INSTALLER_PATH=$(pwd)
 
 function runs_rookie_menu () {

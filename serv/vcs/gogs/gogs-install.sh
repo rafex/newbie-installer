@@ -33,13 +33,13 @@ GOGS_BIN="gogs_${GOGS_VERSION}_linux_amd64.tar.gz"
 function install_dependencies_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
-  sudo apt -y install curl sqlite3
+  sudo apt -y install curl sqlite3 git
 }
 
 function install_dependencies_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
-  sudo yum -y install curl sqlite3
+  sudo yum -y install curl sqlite3 git
 }
 
 function install_dependencies () {
@@ -57,13 +57,13 @@ function download_gogs() {
 
 function  create_user () {
   has_sudo
-  sudo useradd --system $GOGS_USER
+  sudo useradd --system $GOGS_USER -d ${GOGS_INSTALLATION_PATH}
   sudo usermod -s /sbin/nologin $GOGS_USER
 }
 
 function unpackage_gogs () {
   tar -xvf ${TMP_PATH}/${GOGS_BIN} -C ${TMP_PATH}
-  sudo mv ${TMP_PATH}/gogs
+  sudo mv -vf ${TMP_PATH}/gogs /opt/
   sudo chown -R $GOGS_USER:$GOGS_GROUP ${GOGS_INSTALLATION_PATH}
   sudo rm -rf ${GOGS_INSTALLATION_PATH}/scripts
 }
@@ -72,7 +72,7 @@ function create_folders () {
   has_sudo
   sudo mkdir -p /var/log/gogs
   sudo mkdir -p /etc/gogs/config
-  sudo mkdir -p ${GOGS_INSTALLATION_PATH}/custom/config
+  sudo mkdir -p ${GOGS_INSTALLATION_PATH}/custom/conf
   sudo mkdir -p ${GOGS_INSTALLATION_PATH}/data/repository
   sudo mkdir -p ${GOGS_INSTALLATION_PATH}/data/sqlite
   sudo chown -R $GOGS_USER:$GOGS_GROUP /var/log/gogs
@@ -90,10 +90,6 @@ function create_config_gogs () {
   [database]
   DB_TYPE  = sqlite3
   HOST     = 127.0.0.1:3306
-  NAME     = ${GOGS_USER}
-  USER     = root
-  PASSWD   =
-  SSL_MODE = disable
   PATH     = ${GOGS_INSTALLATION_PATH}/data/sqlite/gogs.db
 
   [repository]
@@ -103,7 +99,7 @@ function create_config_gogs () {
   DOMAIN           = ${MY_IP}
   HTTP_PORT        = ${GOGS_PORT}
   ROOT_URL         = http://${MY_IP}:${GOGS_PORT}/
-  DISABLE_SSH      = false
+  DISABLE_SSH      = true
   SSH_PORT         = 22
   START_SSH_SERVER = false
   OFFLINE_MODE     = true
@@ -165,8 +161,10 @@ EOF
 
 function create_data_base_sqlite () {
   cd ${GOGS_INSTALLATION_PATH}/data/sqlite
-  sudo echo ".open gogs.db" | sqlite3
-  sudo chown $GOGS_USER:$GOGS_GROUP gogs.db
+  cd ${TMP_PATH}
+  echo ".save gogs.db" | sqlite3
+  sudo mv -vf ${TMP_PATH}/gogs.db ${GOGS_INSTALLATION_PATH}/data/sqlite/.
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${GOGS_INSTALLATION_PATH}/data/sqlite
   cd $NEWBIE_INSTALLER_PATH
 }
 
