@@ -23,6 +23,8 @@
 . utils/is-root.sh
 . utils/color.sh
 . utils/distro.sh
+. utils/network.sh
+. utils/random.sh
 . utils/arch.sh
 . utils/exit.sh
 . serv/serv.sh
