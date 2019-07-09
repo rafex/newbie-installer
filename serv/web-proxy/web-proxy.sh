@@ -18,10 +18,10 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. nginx-compile.sh
+. serv/web-proxy/nginx/nginx-compile.sh
 
 function web_proxy_menu () {
-  local name_of_menu = "Web/Proxy"
+  local name_of_menu="Web/Proxy"
   local option_1="Nginx - compile and install"
 
   trap '' 2  # ignore control + c

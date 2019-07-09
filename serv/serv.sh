@@ -18,12 +18,12 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. web-proxy/web-proxy.sh
-. git/git.sh
+. serv/web-proxy/web-proxy.sh
+. serv/vcs/vcs.sh
 
 function serv_menu () {
   local option_1="Web/Proxy"
-  local option_2="Git"
+  local option_2="Version Control System"
 
   trap '' 2  # ignore control + c
   while true
@@ -39,12 +39,13 @@ function serv_menu () {
     green_text "================================"
     green_text "================================"
     echo "Enter 1) ${option_1}"
+    echo "Enter 2) ${option_2}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
      1) web_proxy_menu ;;
-     2) git_menu ;;
+     2) vcs_menu ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"

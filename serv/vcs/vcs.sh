@@ -18,10 +18,10 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. gogs-install.sh
+. serv/vcs/gogs/gogs-install.sh
 
-function git_menu () {
-  local name_of_menu = "Git"
+function vcs_menu() {
+  local name_of_menu="Version Control System"
   local option_1="Gogs - install"
 
   trap '' 2  # ignore control + c

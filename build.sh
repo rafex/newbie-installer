@@ -18,7 +18,7 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-find . -type f -iname "*.sh" -exec chmod +x {} +
+find . -type f -iname "*.sh" -exec chmod a+x {} +
 # find . -type f -iname "*.sh" -exec chmod +x {} \;
 
 tar -zcvf scripts.tar.gz * --exclude=.DS_Store --exclude=.git*
