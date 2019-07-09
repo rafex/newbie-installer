@@ -20,7 +20,7 @@
 
 NAME_OF_THE_MODULE="Gogs install"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-GOGS_INSTALLATION_PATH="/opt/gogs"
+INSTALLATION_PATH="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
 TMP_PATH="/tmp"
@@ -57,26 +57,26 @@ function download_gogs() {
 
 function  create_user () {
   has_sudo
-  sudo useradd --system $GOGS_USER -d ${GOGS_INSTALLATION_PATH}
+  sudo useradd --system $GOGS_USER -d ${INSTALLATION_PATH}
   sudo usermod -s /sbin/nologin $GOGS_USER
 }
 
 function unpackage_gogs () {
   tar -xvf ${TMP_PATH}/${GOGS_BIN} -C ${TMP_PATH}
   sudo mv -vf ${TMP_PATH}/gogs /opt/
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${GOGS_INSTALLATION_PATH}
-  sudo rm -rf ${GOGS_INSTALLATION_PATH}/scripts
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}
+  sudo rm -rf ${INSTALLATION_PATH}/scripts
 }
 
 function create_folders () {
   has_sudo
   sudo mkdir -p /var/log/gogs
   sudo mkdir -p /etc/gogs/config
-  sudo mkdir -p ${GOGS_INSTALLATION_PATH}/custom/conf
-  sudo mkdir -p ${GOGS_INSTALLATION_PATH}/data/repository
-  sudo mkdir -p ${GOGS_INSTALLATION_PATH}/data/sqlite
+  sudo mkdir -p ${INSTALLATION_PATH}/custom/conf
+  sudo mkdir -p ${INSTALLATION_PATH}/data/repository
+  sudo mkdir -p ${INSTALLATION_PATH}/data/sqlite
   sudo chown -R $GOGS_USER:$GOGS_GROUP /var/log/gogs
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${GOGS_INSTALLATION_PATH}
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}
 }
 
 function create_config_gogs () {
@@ -90,10 +90,10 @@ function create_config_gogs () {
   [database]
   DB_TYPE  = sqlite3
   HOST     = 127.0.0.1:3306
-  PATH     = ${GOGS_INSTALLATION_PATH}/data/sqlite/gogs.db
+  PATH     = ${INSTALLATION_PATH}/data/sqlite/gogs.db
 
   [repository]
-  ROOT = ${GOGS_INSTALLATION_PATH}/data/repository
+  ROOT = ${INSTALLATION_PATH}/data/repository
 
   [server]
   DOMAIN           = ${MY_IP}
@@ -132,7 +132,7 @@ function create_config_gogs () {
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH}/app.ini.newbie /etc/gogs/config/app.ini
-  sudo ln -s /etc/gogs/config/app.ini ${GOGS_INSTALLATION_PATH}/custom/conf/app.ini
+  sudo ln -s /etc/gogs/config/app.ini ${INSTALLATION_PATH}/custom/conf/app.ini
 }
 
 function create_service() {
@@ -145,9 +145,9 @@ function create_service() {
   [Service]
   User=${GOGS_USER}
   Group=${GOGS_GROUP}
-  ExecStart=${GOGS_INSTALLATION_PATH}/gogs web
+  ExecStart=${INSTALLATION_PATH}/gogs web
   Restart=always
-  WorkingDirectory=${GOGS_INSTALLATION_PATH}
+  WorkingDirectory=${INSTALLATION_PATH}
 
   [Install]
   WantedBy=multi-user.target
@@ -160,11 +160,11 @@ EOF
 }
 
 function create_data_base_sqlite () {
-  cd ${GOGS_INSTALLATION_PATH}/data/sqlite
+  cd ${INSTALLATION_PATH}/data/sqlite
   cd ${TMP_PATH}
   echo ".save gogs.db" | sqlite3
-  sudo mv -vf ${TMP_PATH}/gogs.db ${GOGS_INSTALLATION_PATH}/data/sqlite/.
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${GOGS_INSTALLATION_PATH}/data/sqlite
+  sudo mv -vf ${TMP_PATH}/gogs.db ${INSTALLATION_PATH}/data/sqlite/.
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}/data/sqlite
   cd $NEWBIE_INSTALLER_PATH
 }
 

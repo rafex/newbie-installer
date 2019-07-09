@@ -23,7 +23,7 @@
 
 NAME_OF_THE_MODULE="Nginx compile"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-NGINX_INSTALLATION_PATH="/opt/nginx"
+INSTALLATION_PATH="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
 TMP_PATH="/tmp"
@@ -232,7 +232,7 @@ function final_adjustments () {
 
 function  create_user () {
   has_sudo
-  sudo useradd --system $NGINX_USER -d $NGINX_INSTALLATION_PATH
+  sudo useradd --system $NGINX_USER -d $INSTALLATION_PATH
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 

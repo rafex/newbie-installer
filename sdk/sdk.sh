@@ -14,17 +14,16 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 30 June 2019
+# Date: 09 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. serv/web-proxy/web-proxy.sh
-. serv/vcs/vcs.sh
+. sdk/golang.sh
 
-function serv_menu () {
-  local name_of_menu="Servers"
-  local option_1="Web/Proxy"
-  local option_2="Version Control System"
+function sdk_menu () {
+  local name_of_menu="Software Development Kit"
+  local option_1="Golang"
+  local option_2=""
 
   trap '' 2  # ignore control + c
   while true
@@ -45,8 +44,8 @@ function serv_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) web_proxy_menu ;;
-     2) vcs_menu ;;
+     1) golang_menu ;;
+     2) blue_text "Hello" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"

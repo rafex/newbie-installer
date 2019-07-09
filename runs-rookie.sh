@@ -26,8 +26,10 @@
 . utils/network.sh
 . utils/random.sh
 . utils/arch.sh
+. utils/bash_profile.sh
 . utils/exit.sh
 . serv/serv.sh
+. sdk/sdk.sh
 
 if is_root; then
     red_text "Error: need to call this script as a normal user, not as root!"
@@ -39,7 +41,7 @@ NEWBIE_INSTALLER_PATH=$(pwd)
 
 function runs_rookie_menu () {
   local option_1="Servers"
-  local option_2=""
+  local option_2="Software Development Kit"
   local option_3=""
   trap '' 2  # ignore control + c
   while true
@@ -59,11 +61,13 @@ function runs_rookie_menu () {
     green_text "================================"
     green_text "================================"
     echo "Enter 1) ${option_1}"
+    echo "Enter 2) ${option_2}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
      1) serv_menu ;;
+     2) sdk_menu ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
