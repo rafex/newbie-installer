@@ -14,8 +14,6 @@
 # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
 # Date: 29 June 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>

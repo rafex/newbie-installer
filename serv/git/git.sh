@@ -14,47 +14,27 @@
 # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
-# Date: 29 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. utils/is-root.sh
-. utils/color.sh
-. utils/distro.sh
-. utils/arch.sh
-. utils/exit.sh
-. serv/serv.sh
+. gogs-install.sh
 
-if is_root; then
-    red_text "Error: need to call this script as a normal user, not as root!"
-    exit 1
-fi
+function git_menu () {
+  local name_of_menu = "Git"
+  local option_1="Gogs - install"
 
-NEWBIE_INSTALLER_VERSION="0.1.0-SNAPSHOT"
-NEWBIE_INSTALLER_PATH=$(pwd)
-
-function runs_rookie_menu () {
-  local option_1="Servers"
-  local option_2=""
-  local option_3=""
   trap '' 2  # ignore control + c
   while true
   do
     local answer
     local input
     clear # clear screen for each loop of menu
-    red_text "Version: ${NEWBIE_INSTALLER_VERSION}"
     green_text "================================"
     green_text "================================"
-    echo "-------------      -------------"
-    blue_text "------------- Menu -------------"
-    blue_text "------- Serv -------"
-    echo "-------                  -------"
-    echo "-----------    OS    -----------"
-    what_os_are_you
-    echo "-----------          -----------"
+    echo "-------------        -------------"
+    red_text "${name_of_menu}"
+    echo "-----------            -----------"
     green_text "================================"
     green_text "================================"
     echo "Enter 1) ${option_1}"
@@ -62,12 +42,10 @@ function runs_rookie_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) serv_menu ;;
+     1) gogs_install_menu ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
     read input
   done
 }
-
-runs_rookie_menu

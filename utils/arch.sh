@@ -14,11 +14,15 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 30 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-function good_bye () {
-  green_text "Good bye!!! :-)"
-  exit
+function arch() {
+  MACHINE_TYPE=`uname -m`
+  if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    return 64
+  else
+    return 32
+  fi
 }

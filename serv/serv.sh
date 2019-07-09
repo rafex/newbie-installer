@@ -18,7 +18,33 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-function good_bye () {
-  green_text "Good bye!!! :-)"
-  exit
+. web-proxy/web-proxy.sh
+
+function serv_menu () {
+  local option_1="Nginx - compile and install"
+
+  trap '' 2  # ignore control + c
+  while true
+  do
+    local answer
+    local input
+    clear # clear screen for each loop of menu
+    green_text "================================"
+    green_text "================================"
+    echo "-------------      -------------"
+    echo "----------- Servers  -----------"
+    echo "-----------          -----------"
+    green_text "================================"
+    green_text "================================"
+    echo "Enter 1) ${option_1}"
+    red_text "Enter q) Quit"
+    yellow_text "Enter your selection here and hit <return>"
+    read answer
+    case "$answer" in
+     1) web_proxy_menu ;;
+     q) good_bye ;;
+    esac
+    red_text "Hit the <return> key to continue"
+    read input
+  done
 }

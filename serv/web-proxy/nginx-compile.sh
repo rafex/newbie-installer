@@ -14,8 +14,6 @@
  # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
 # Date: 29 June 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
@@ -23,8 +21,8 @@
 # . ../../utils/color.sh
 # . ../../utils/is-root.sh
 
-INITIAL_TEXT="Load module nginx compile"
 NAME_OF_THE_MODULE="Nginx compile"
+INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 NGINX_INSTALLATION_PATH="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
@@ -379,6 +377,7 @@ function execute_nginx_compile () {
 }
 
 function nginx_compile_menu () {
+
   local option_1="Download libs"
   local option_2="Download Nginx"
   local option_3="Unpackage libs"
@@ -398,9 +397,6 @@ function nginx_compile_menu () {
     clear # clear screen for each loop of menu
     green_text "================================"
     green_text "================================"
-    echo "-------------      -------------"
-    blue_text "----------- Distro   -----------"
-    what_distribution_are_you
     echo "-----------          -----------"
     red_text "${NAME_OF_THE_MODULE}"
     echo "-----------          -----------"

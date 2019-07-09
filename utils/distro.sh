@@ -14,8 +14,6 @@
 # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
 # Date: 29 June 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
@@ -44,4 +42,15 @@ function what_distribution_are_you_v2 () {
       fi
   fi
   [ "$WHAT_DISTRO" == "" ] && export WHAT_DISTRO=$what_name
+}
+
+function what_os_are_you () {
+  if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    echo "GNU/Linux"
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "macOS"
+  else
+    red_text "Unknown"
+    exit
+  fi
 }

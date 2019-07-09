@@ -14,11 +14,10 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 30 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-function good_bye () {
-  green_text "Good bye!!! :-)"
-  exit
-}
+
+sudo lxc-attach -n gogs -- useradd rafex2 -m -s /bin/bash
+sudo lxc-attach -n gogs -- passwd rafex2
