@@ -14,36 +14,10 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 09 July 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-function create_profile() {
-  if [  -f ~/.bashrc ]; then
-    if [ ! -f ~/.profile ]; then
-         touch ~/.profile
-         echo "if [ -f ~/.profile ]; then
-       . ~/.bash_profile
-fi" >> ~/.bashrc
-    fi
-  fi
-
-  if [  -f ~/.bash_profile ]; then
-    if [ ! -f ~/.profile ]; then
-         touch ~/.profile
-         echo "if [ -f ~/.profile ]; then
-       . ~/.bash_profile
-fi" >> ~/.bash_profile
-    fi
-  fi
-}
-
-function load_profile() {
-  if [  -f ~/.bashrc ]; then
-    source ~/.bashrc
-  fi
-
-  if [  -f ~/.bash_profile ]; then
-    source ~/.bash_profile
-  fi
+function random_alphanumeric() {
+  export RANDOM_ALPHANUMERIC=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1)
 }

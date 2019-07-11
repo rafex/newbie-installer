@@ -21,4 +21,4 @@
 find . -type f -iname "*.sh" -exec chmod a+x {} +
 # find . -type f -iname "*.sh" -exec chmod +x {} \;
 
-tar -zcvf scripts.tar.gz * --exclude=.DS_Store --exclude=.git*
+tar -zcvf newbie-installer.tar.gz bin/ --exclude=.DS_Store --exclude=.git*

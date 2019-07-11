@@ -34,21 +34,24 @@ function unpackage_golang () {
 }
 
 function install_golang() {
+  if [ ! -f ${TMP_PATH}/${GOLANG_BINARY} ]; then
+    download_golang
+  fi
+  unpackage_golang
   has_sudo
   sudo mv -vf ${TMP_PATH}/go $INSTALLATION_PATH
   create_profile
-  echo "export PATH=\$PATH:${INSTALLATION_PATH}/bin" >> ~/.profile
-  echo "export GOPATH=\$HOME/go" >> ~/.profile
+  echo "export PATH=\$PATH:${INSTALLATION_PATH}/bin" >> ~/${PROFILE_NEWBIE}
+  mkdir -p $HOME/go
+  echo "export GOPATH=\$HOME/go" >> ~/${PROFILE_NEWBIE}
   load_profile
 }
 
 function execute_all() {
-  download_golang
   install_golang
 }
 
 function golang_menu () {
-
  local option_1="Download Golang"
  local option_2="Install Golang"
  local option_all="All"
@@ -73,7 +76,7 @@ function golang_menu () {
    read answer
    case "$answer" in
     1) download_golang && green_text "Finished ${option_1}" ;;
-    2) download_golang && install_golang && green_text "Finished ${option_2}" ;;
+    2) install_golang && green_text "Finished ${option_2}" ;;
     a) execute_all && green_text "Finished ${option_all}" ;;
     q) good_bye ;;
    esac

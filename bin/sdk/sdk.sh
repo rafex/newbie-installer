@@ -39,13 +39,13 @@ function sdk_menu () {
     green_text "================================"
     green_text "================================"
     echo "Enter 1) ${option_1}"
-    echo "Enter 2) ${option_2}"
+    #echo "Enter 2) ${option_2}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
      1) golang_menu ;;
-     2) blue_text "Hello" ;;
+     #2) blue_text "Hello" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"

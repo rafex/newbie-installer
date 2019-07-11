@@ -26,7 +26,7 @@
 . utils/network.sh
 . utils/random.sh
 . utils/arch.sh
-. utils/bash_profile.sh
+. utils/profile.sh
 . utils/exit.sh
 . serv/serv.sh
 . sdk/sdk.sh
