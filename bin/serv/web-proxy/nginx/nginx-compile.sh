@@ -34,7 +34,7 @@ LIBRESSL_VERSION="libressl-2.9.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.1"
+NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 function nginx_hello () {
@@ -172,7 +172,7 @@ function modified_html () {
 </style>
 </head>
 <body>
-<h1>Welcome to nginx!</h1>
+<h1>Welcome to nginx ${NGINX_VERSION}!</h1>
 <h2>Installed with Newbie Installer</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
