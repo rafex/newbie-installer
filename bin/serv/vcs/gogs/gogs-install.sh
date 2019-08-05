@@ -20,7 +20,7 @@
 
 NAME_OF_THE_MODULE="Gogs install"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-INSTALLATION_PATH="/opt/gogs"
+INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
 TMP_PATH="/tmp"
@@ -30,23 +30,23 @@ NAME_REPOSITORY="Newbie Installer Repository"
 GOGS_VERSION="0.11.79"
 GOGS_BIN="gogs_${GOGS_VERSION}_linux_amd64.tar.gz"
 
-function install_dependencies_for_debian () {
+function install_dependencies_gogs_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
   sudo apt -y install curl sqlite3 git
 }
 
-function install_dependencies_for_centos () {
+function install_dependencies_gogs_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y install curl sqlite3 git
 }
 
-function install_dependencies () {
+function install_dependencies_gogs () {
   local distro=$(what_distribution_are_you)
   case $distro in
-    debian) install_dependencies_for_debian ;;
-    centos) install_dependencies_for_centos ;;
+    debian) install_dependencies_gogs_for_debian ;;
+    centos) install_dependencies_gogs_for_centos ;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
@@ -57,26 +57,26 @@ function download_gogs() {
 
 function  create_user () {
   has_sudo
-  sudo useradd --system $GOGS_USER -d ${INSTALLATION_PATH}
+  sudo useradd --system $GOGS_USER -d ${INSTALLATION_PATH_GOGS}
   sudo usermod -s /sbin/nologin $GOGS_USER
 }
 
 function unpackage_gogs () {
   tar -xvf ${TMP_PATH}/${GOGS_BIN} -C ${TMP_PATH}
   sudo mv -vf ${TMP_PATH}/gogs /opt/
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}
-  sudo rm -rf ${INSTALLATION_PATH}/scripts
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH_GOGS}
+  sudo rm -rf ${INSTALLATION_PATH_GOGS}/scripts
 }
 
-function create_folders () {
+function create_folders_gogs () {
   has_sudo
   sudo mkdir -vp /var/log/gogs
   sudo mkdir -vp /etc/gogs/config
-  sudo mkdir -vp ${INSTALLATION_PATH}/custom/conf
-  sudo mkdir -vp ${INSTALLATION_PATH}/data/repository
-  sudo mkdir -vp ${INSTALLATION_PATH}/data/sqlite
+  sudo mkdir -vp ${INSTALLATION_PATH_GOGS}/custom/conf
+  sudo mkdir -vp ${INSTALLATION_PATH_GOGS}/data/repository
+  sudo mkdir -vp ${INSTALLATION_PATH_GOGS}/data/sqlite
   sudo chown -R $GOGS_USER:$GOGS_GROUP /var/log/gogs
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH_GOGS}
 }
 
 function create_config_gogs () {
@@ -90,10 +90,10 @@ function create_config_gogs () {
   [database]
   DB_TYPE  = sqlite3
   HOST     = 127.0.0.1:3306
-  PATH     = ${INSTALLATION_PATH}/data/sqlite/gogs.db
+  PATH     = ${INSTALLATION_PATH_GOGS}/data/sqlite/gogs.db
 
   [repository]
-  ROOT = ${INSTALLATION_PATH}/data/repository
+  ROOT = ${INSTALLATION_PATH_GOGS}/data/repository
 
   [server]
   DOMAIN           = ${MY_IP}
@@ -132,10 +132,10 @@ function create_config_gogs () {
 EOF
   has_sudo
   sudo cp -v $TMP_PATH/app.ini.newbie /etc/gogs/config/app.ini
-  sudo ln -s /etc/gogs/config/app.ini $INSTALLATION_PATH/custom/conf/app.ini
+  sudo ln -s /etc/gogs/config/app.ini $INSTALLATION_PATH_GOGS/custom/conf/app.ini
 }
 
-function create_service() {
+function create_service_gogs() {
   cat > ${TMP_PATH}/gogs.service.newbie << EOF
   [Unit]
   Description=Gogs git server
@@ -145,9 +145,9 @@ function create_service() {
   [Service]
   User=${GOGS_USER}
   Group=${GOGS_GROUP}
-  ExecStart=${INSTALLATION_PATH}/gogs web
+  ExecStart=${INSTALLATION_PATH_GOGS}/gogs web
   Restart=always
-  WorkingDirectory=${INSTALLATION_PATH}
+  WorkingDirectory=${INSTALLATION_PATH_GOGS}
 
   [Install]
   WantedBy=multi-user.target
@@ -160,15 +160,15 @@ EOF
 }
 
 function create_data_base_sqlite () {
-  cd ${INSTALLATION_PATH}/data/sqlite
+  cd ${INSTALLATION_PATH_GOGS}/data/sqlite
   cd ${TMP_PATH}
   echo ".save gogs.db" | sqlite3
-  sudo mv -vf ${TMP_PATH}/gogs.db ${INSTALLATION_PATH}/data/sqlite/.
-  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}/data/sqlite
+  sudo mv -vf ${TMP_PATH}/gogs.db ${INSTALLATION_PATH_GOGS}/data/sqlite/.
+  sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH_GOGS}/data/sqlite
   cd $NEWBIE_INSTALLER_PATH
 }
 
-function run_service () {
+function run_service_gogs () {
   has_sudo
   sudo systemctl start gogs
 }
@@ -178,13 +178,13 @@ function install_gogs () {
   sleep 2
   unpackage_gogs
   sleep 2
-  create_folders
+  create_folders_gogs
   sleep 2
   create_data_base_sqlite
   sleep 2
   create_config_gogs
   sleep 2
-  create_service
+  create_service_gogs
 }
 
 function execute_all() {
@@ -192,7 +192,7 @@ function execute_all() {
   sleep 2
   install_gogs
   sleep 2
-  run_service
+  run_service_gogs
 }
 
 function gogs_install_menu () {
@@ -224,10 +224,10 @@ function gogs_install_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) install_dependencies && download_gogs && green_text "Finished ${option_1}" ;;
-     2) install_dependencies && install_gogs && green_text "Finished ${option_2}" ;;
-     3) create_service && green_text "Finished ${option_3}" ;;
-     4) run_service && green_text "Finished ${option_4}" ;;
+     1) install_dependencies_gogs && download_gogs && green_text "Finished ${option_1}" ;;
+     2) install_dependencies_gogs && install_gogs && green_text "Finished ${option_2}" ;;
+     3) create_service_gogs && green_text "Finished ${option_3}" ;;
+     4) run_service_gogs && green_text "Finished ${option_4}" ;;
      a) execute_all && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
