@@ -47,7 +47,7 @@ function install_golang() {
   load_profile
 }
 
-function execute_all() {
+function execute_all_golang() {
   install_golang
 }
 
@@ -77,7 +77,7 @@ function golang_menu () {
    case "$answer" in
     1) download_golang && green_text "Finished ${option_1}" ;;
     2) install_golang && green_text "Finished ${option_2}" ;;
-    a) execute_all && green_text "Finished ${option_all}" ;;
+    a) execute_all_golang && green_text "Finished ${option_all}" ;;
     q) good_bye ;;
    esac
    red_text "Hit the <return> key to continue"

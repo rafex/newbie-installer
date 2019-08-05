@@ -187,7 +187,7 @@ function install_gogs () {
   create_service_gogs
 }
 
-function execute_all() {
+function execute_all_gogs() {
   download_gogs
   sleep 2
   install_gogs
@@ -228,7 +228,7 @@ function gogs_install_menu () {
      2) install_dependencies_gogs && install_gogs && green_text "Finished ${option_2}" ;;
      3) create_service_gogs && green_text "Finished ${option_3}" ;;
      4) run_service_gogs && green_text "Finished ${option_4}" ;;
-     a) execute_all && green_text "Finished ${option_all}" ;;
+     a) execute_all_gogs && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
