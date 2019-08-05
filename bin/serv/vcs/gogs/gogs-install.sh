@@ -52,7 +52,7 @@ function install_dependencies () {
 }
 
 function download_gogs() {
-  curl https://dl.gogs.io/0.11.79/$GOGS_BIN --output ${TMP_PATH}/${GOGS_BIN}
+  curl https://dl.gogs.io/$GOGS_VERSION/$GOGS_BIN --output ${TMP_PATH}/${GOGS_BIN}
 }
 
 function  create_user () {
@@ -70,11 +70,11 @@ function unpackage_gogs () {
 
 function create_folders () {
   has_sudo
-  sudo mkdir -p /var/log/gogs
-  sudo mkdir -p /etc/gogs/config
-  sudo mkdir -p ${INSTALLATION_PATH}/custom/conf
-  sudo mkdir -p ${INSTALLATION_PATH}/data/repository
-  sudo mkdir -p ${INSTALLATION_PATH}/data/sqlite
+  sudo mkdir -vp /var/log/gogs
+  sudo mkdir -vp /etc/gogs/config
+  sudo mkdir -vp ${INSTALLATION_PATH}/custom/conf
+  sudo mkdir -vp ${INSTALLATION_PATH}/data/repository
+  sudo mkdir -vp ${INSTALLATION_PATH}/data/sqlite
   sudo chown -R $GOGS_USER:$GOGS_GROUP /var/log/gogs
   sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH}
 }
@@ -131,8 +131,8 @@ function create_config_gogs () {
   SECRET_KEY   = ${RANDOM_ALPHANUMERIC}
 EOF
   has_sudo
-  sudo cp -v ${TMP_PATH}/app.ini.newbie /etc/gogs/config/app.ini
-  sudo ln -s /etc/gogs/config/app.ini ${INSTALLATION_PATH}/custom/conf/app.ini
+  sudo cp -v $TMP_PATH/app.ini.newbie /etc/gogs/config/app.ini
+  sudo ln -s /etc/gogs/config/app.ini $INSTALLATION_PATH/custom/conf/app.ini
 }
 
 function create_service() {
@@ -175,17 +175,23 @@ function run_service () {
 
 function install_gogs () {
   create_user
+  sleep 2
   unpackage_gogs
+  sleep 2
   create_folders
+  sleep 2
   create_data_base_sqlite
+  sleep 2
   create_config_gogs
+  sleep 2
   create_service
 }
 
 function execute_all() {
   download_gogs
-  sleep 1
+  sleep 2
   install_gogs
+  sleep 2
   run_service
 }
 
