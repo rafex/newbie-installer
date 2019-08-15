@@ -26,7 +26,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH="/tmp"
+TMP_PATH="/opt"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
@@ -234,7 +234,7 @@ function final_adjustments () {
   modified_html
 }
 
-function  create_user () {
+function  create_user_nginx () {
   has_sudo
   sudo useradd --system $NGINX_USER -d $INSTALLATION_PATH_NGINX
   sudo usermod -s /sbin/nologin $NGINX_USER
@@ -348,7 +348,7 @@ function make_install_nginx () {
   sudo make install
   cd $NEWBIE_INSTALLER_PATH
 
-  create_user
+  create_user_nginx
   create_folders_nginx
   final_adjustments
 }

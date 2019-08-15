@@ -55,7 +55,7 @@ function download_gogs() {
   curl https://dl.gogs.io/$GOGS_VERSION/$GOGS_BIN --output ${TMP_PATH}/${GOGS_BIN}
 }
 
-function  create_user () {
+function  create_user_gogs () {
   has_sudo
   sudo useradd --system $GOGS_USER -d ${INSTALLATION_PATH_GOGS}
   sudo usermod -s /sbin/nologin $GOGS_USER
@@ -174,7 +174,7 @@ function run_service_gogs () {
 }
 
 function install_gogs () {
-  create_user
+  create_user_gogs
   sleep 2
   unpackage_gogs
   sleep 2
