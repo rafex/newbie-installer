@@ -37,14 +37,18 @@ PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
+URL_ZLIB="https://www.zlib.net/"
+URL_PCRE="https://ftp.pcre.org/pub/pcre/"
+URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
+
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
 }
 
 function download_libs () {
-  curl https://www.zlib.net/$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
-  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
-  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
+  curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
+  curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
+  curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
 }
 
 function download_nginx () {
