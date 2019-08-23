@@ -23,7 +23,7 @@
 
 NAME_OF_THE_MODULE="Nginx compile"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-INSTALLATION_PATH_NGINX="/opt/nginx"
+#INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
 TMP_PATH_NGINX="${HOME}/tmp/nginx"
