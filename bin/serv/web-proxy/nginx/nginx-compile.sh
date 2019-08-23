@@ -26,7 +26,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH_NGINX="/opt"
+TMP_PATH_NGINX="${HOME}/tmp/nginx"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
@@ -46,12 +46,14 @@ function nginx_hello () {
 }
 
 function download_libs () {
+  mkdir -vp $TMP_PATH_NGINX
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
 }
 
 function download_nginx () {
+  mkdir -vp $TMP_PATH_NGINX
   curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
 }
 
@@ -237,7 +239,7 @@ function final_adjustments () {
 
 function  create_user_nginx () {
   has_sudo
-  sudo useradd --system $NGINX_USER -d $INSTALLATION_PATH_NGINX
+  sudo useradd --system $NGINX_USER -d /usr/share/nginx/html
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 

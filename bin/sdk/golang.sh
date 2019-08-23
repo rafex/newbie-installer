@@ -23,7 +23,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOLANG="/usr/local/go"
 GOLANG_VERSION="1.12.7"
 GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
-TMP_PATH_GOLANG="/tmp"
+TMP_PATH_GOLANG="${HOME}/tmp/golang"
 
 function download_golang () {
   curl https://dl.google.com/go/$GOLANG_BINARY --output ${TMP_PATH_GOLANG}/${GOLANG_BINARY}

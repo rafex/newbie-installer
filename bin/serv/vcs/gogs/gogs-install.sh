@@ -23,7 +23,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
-TMP_PATH_GOGS="/opt"
+TMP_PATH_GOGS="${HOME}/tmp/gogs"
 GOGS_PORT=3000
 NAME_REPOSITORY="Newbie Installer Repository"
 
@@ -52,6 +52,7 @@ function install_dependencies_gogs () {
 }
 
 function download_gogs() {
+  mkdir -vp $TMP_PATH_GOGS
   curl https://dl.gogs.io/$GOGS_VERSION/$GOGS_BIN --output ${TMP_PATH_GOGS}/${GOGS_BIN}
 }
 
