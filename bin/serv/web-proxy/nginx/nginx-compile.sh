@@ -23,10 +23,10 @@
 
 NAME_OF_THE_MODULE="Nginx compile"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-INSTALLATION_PATH_NGINX="/opt/nginx"
+#INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH="/opt"
+TMP_PATH_NGINX="${HOME}/tmp/nginx"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
@@ -46,23 +46,25 @@ function nginx_hello () {
 }
 
 function download_libs () {
-  curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
-  curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
-  curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
+  mkdir -vp $TMP_PATH_NGINX
+  curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
+  curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
+  curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
 }
 
 function download_nginx () {
-  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH}/${NGINX_SRC}
+  mkdir -vp $TMP_PATH_NGINX
+  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
 }
 
 function unpackage_libs_nginx () {
-  tar -xvf ${TMP_PATH}/${ZLIB_SRC} -C ${TMP_PATH}
-  tar -xvf ${TMP_PATH}/${PCRE_SRC} -C ${TMP_PATH}
-  tar -xvf ${TMP_PATH}/${LIBRESSL_SRC} -C ${TMP_PATH}
+  tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
+  tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
+  tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
 }
 
 function unpackage_nginx () {
-  tar -xvf ${TMP_PATH}/${NGINX_SRC} -C ${TMP_PATH}
+  tar -xvf ${TMP_PATH_NGINX}/${NGINX_SRC} -C ${TMP_PATH_NGINX}
 }
 
 function install_dependencies_nginx_for_debian () {
@@ -89,7 +91,7 @@ function install_dependencies_nginx () {
 }
 
 function nginx_conf_default () {
-  cat > ${TMP_PATH}/nginx.conf.newbie << EOF
+  cat > ${TMP_PATH_NGINX}/nginx.conf.newbie << EOF
   user  ${NGINX_USER};
   worker_processes  4;
 
@@ -125,13 +127,13 @@ function nginx_conf_default () {
       include   /etc/nginx/conf.d/*.conf;
   }
 EOF
-  cat > ${TMP_PATH}/default-site.conf.newbie << EOF
+  cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
   server {
       listen       80;
       listen       localhost:80;
       server_name  localhost;
       server_tokens off;
-      
+
       charset koi8-r;
       access_log  /var/log/nginx/host.access.log  main;
 
@@ -158,12 +160,12 @@ EOF
   }
 EOF
   has_sudo
-  sudo cp -v ${TMP_PATH}/nginx.conf.newbie /etc/nginx/nginx.conf
-  sudo cp -v ${TMP_PATH}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
+  sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
+  sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
 }
 
 function modified_html () {
-  cat > ${TMP_PATH}/index.html.newbie << EOF
+  cat > ${TMP_PATH_NGINX}/index.html.newbie << EOF
 <!DOCTYPE html>
 <html>
 <head>
@@ -193,7 +195,7 @@ Commercial support is available at
 </body>
 </html>
 EOF
-  cat > ${TMP_PATH}/50x.html.newbie << EOF
+  cat > ${TMP_PATH_NGINX}/50x.html.newbie << EOF
   <!DOCTYPE html>
   <html>
   <head>
@@ -219,8 +221,8 @@ EOF
   </html>
 EOF
   has_sudo
-  sudo cp ${TMP_PATH}/50x.html.newbie /usr/share/nginx/html/50x.html
-  sudo cp ${TMP_PATH}/index.html.newbie /usr/share/nginx/html/index.html
+  sudo cp ${TMP_PATH_NGINX}/50x.html.newbie /usr/share/nginx/html/50x.html
+  sudo cp ${TMP_PATH_NGINX}/index.html.newbie /usr/share/nginx/html/index.html
 }
 
 function final_adjustments () {
@@ -237,7 +239,7 @@ function final_adjustments () {
 
 function  create_user_nginx () {
   has_sudo
-  sudo useradd --system $NGINX_USER -d $INSTALLATION_PATH_NGINX
+  sudo useradd --system $NGINX_USER -d /usr/share/nginx/html
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 
@@ -250,7 +252,7 @@ function create_folders_nginx () {
 }
 
 function create_service_nginx () {
-  cat > ${TMP_PATH}/nginx.service.newbie << EOF
+  cat > ${TMP_PATH_NGINX}/nginx.service.newbie << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
 Documentation=https://nginx.org/en/docs/
@@ -269,14 +271,14 @@ ExecStop=/bin/kill -s TERM \$MAINPID
 WantedBy=multi-user.target
 EOF
   has_sudo
-  sudo cp -v ${TMP_PATH}/nginx.service.newbie /etc/systemd/system/nginx.service
+  sudo cp -v ${TMP_PATH_NGINX}/nginx.service.newbie /etc/systemd/system/nginx.service
   sudo chmod 755 /etc/systemd/system/nginx.service
   sudo systemctl daemon-reload
   sudo systemctl enable nginx.service
 }
 
 function configure_nginx () {
-  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=/etc/nginx \
             --sbin-path=/usr/sbin/nginx \
             --modules-path=/usr/lib64/nginx/modules \
@@ -327,11 +329,11 @@ function configure_nginx () {
             --with-stream_geoip_module=dynamic \
             --with-stream_ssl_preread_module \
             --with-compat \
-            --with-pcre=${TMP_PATH}/${PCRE_VERSION} \
+            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
             --with-pcre-jit \
-            --with-openssl=${TMP_PATH}/${LIBRESSL_VERSION} \
+            --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
             --with-openssl-opt=no-nextprotoneg \
-            --with-zlib=${TMP_PATH}/${ZLIB_VERSION} \
+            --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
             --with-zlib-asm=CPU \
             --with-libatomic \
             --with-debug
@@ -339,14 +341,14 @@ function configure_nginx () {
 }
 
 function make_nginx () {
-  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   make
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function make_install_nginx () {
   has_sudo
-  cd ${TMP_PATH}/nginx-${NGINX_VERSION}
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   sudo make install
   cd $NEWBIE_INSTALLER_PATH
 
