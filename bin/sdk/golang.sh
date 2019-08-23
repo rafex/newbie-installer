@@ -23,23 +23,23 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOLANG="/usr/local/go"
 GOLANG_VERSION="1.12.7"
 GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
-TMP_PATH="/tmp"
+TMP_PATH_GOLANG="/tmp"
 
 function download_golang () {
-  curl https://dl.google.com/go/$GOLANG_BINARY --output ${TMP_PATH}/${GOLANG_BINARY}
+  curl https://dl.google.com/go/$GOLANG_BINARY --output ${TMP_PATH_GOLANG}/${GOLANG_BINARY}
 }
 
 function unpackage_golang () {
-  tar -xvf ${TMP_PATH}/${GOLANG_BINARY} -C ${TMP_PATH}
+  tar -xvf ${TMP_PATH_GOLANG}/${GOLANG_BINARY} -C ${TMP_PATH_GOLANG}
 }
 
 function install_golang() {
-  if [ ! -f ${TMP_PATH}/${GOLANG_BINARY} ]; then
+  if [ ! -f ${TMP_PATH_GOLANG}/${GOLANG_BINARY} ]; then
     download_golang
   fi
   unpackage_golang
   has_sudo
-  sudo mv -vf ${TMP_PATH}/go $INSTALLATION_PATH_GOLANG
+  sudo mv -vf ${TMP_PATH_GOLANG}/go $INSTALLATION_PATH_GOLANG
   create_profile
   echo "export PATH=\$PATH:${INSTALLATION_PATH_GOLANG}/bin" >> ~/${PROFILE_NEWBIE}
   mkdir -p $HOME/go
