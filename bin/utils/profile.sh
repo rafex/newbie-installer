@@ -14,11 +14,39 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 29 June 2019
+# Date: 09 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-find . -type f -iname "*.sh" -exec chmod a+x {} +
-# find . -type f -iname "*.sh" -exec chmod +x {} \;
+PROFILE_NEWBIE=".newbie"
 
-tar -zcvf newbie-installer.tar.gz bin/ --exclude=.DS_Store --exclude=.git*
+function create_profile() {
+  if [  -f ~/.bashrc ]; then
+    if [ ! -f ~/${PROFILE_NEWBIE} ]; then
+         touch ~/${PROFILE_NEWBIE}
+    fi
+    echo "if [ -f ~/${PROFILE_NEWBIE} ]; then
+  . ~/${PROFILE_NEWBIE}
+fi" >> ~/.bashrc
+  fi
+
+  if [  -f ~/.bash_profile ]; then
+    if [ ! -f ~/${PROFILE_NEWBIE} ]; then
+         touch ~/${PROFILE_NEWBIE}
+    fi
+    echo "if [ -f ~/${PROFILE_NEWBIE} ]; then
+  . ~/.newbie
+fi" >> ~/.bash_profile
+  fi
+}
+
+function load_profile() {
+  if [  -f ~/.bashrc ]; then
+    source ~/.bashrc
+  fi
+
+  if [  -f ~/.bash_profile ]; then
+    source ~/.bash_profile
+  fi
+  red_text "Load you bash source ~/.bashrc or source ~/.bash_profile"
+}

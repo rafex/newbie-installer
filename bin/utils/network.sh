@@ -14,11 +14,14 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 29 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-find . -type f -iname "*.sh" -exec chmod a+x {} +
-# find . -type f -iname "*.sh" -exec chmod +x {} \;
+function ip_detect_v01() {
+  export MY_IP=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1 -d'/')
+}
 
-tar -zcvf newbie-installer.tar.gz bin/ --exclude=.DS_Store --exclude=.git*
+function ip_detect_v02() {
+  export MY_IPS=$(ip addr show | grep "inet " | grep -v "127.0.0.1/8" | awk '{print $2}')
+}
