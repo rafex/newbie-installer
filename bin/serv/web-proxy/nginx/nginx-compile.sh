@@ -130,7 +130,8 @@ EOF
       listen       80;
       listen       localhost:80;
       server_name  localhost;
-
+      server_tokens off;
+      
       charset koi8-r;
       access_log  /var/log/nginx/host.access.log  main;
 
@@ -312,6 +313,7 @@ function configure_nginx () {
             --with-http_degradation_module \
             --with-http_slice_module \
             --with-http_stub_status_module \
+            --without-http_autoindex_module \
             --http-client-body-temp-path=/var/cache/nginx/client_temp \
             --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
             --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
