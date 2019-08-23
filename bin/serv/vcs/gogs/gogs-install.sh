@@ -23,7 +23,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
-TMP_PATH="/tmp"
+TMP_PATH_GOGS="${HOME}/tmp/gogs"
 GOGS_PORT=3000
 NAME_REPOSITORY="Newbie Installer Repository"
 
@@ -52,7 +52,8 @@ function install_dependencies_gogs () {
 }
 
 function download_gogs() {
-  curl https://dl.gogs.io/$GOGS_VERSION/$GOGS_BIN --output ${TMP_PATH}/${GOGS_BIN}
+  mkdir -vp $TMP_PATH_GOGS
+  curl https://dl.gogs.io/$GOGS_VERSION/$GOGS_BIN --output ${TMP_PATH_GOGS}/${GOGS_BIN}
 }
 
 function  create_user_gogs () {
@@ -62,8 +63,8 @@ function  create_user_gogs () {
 }
 
 function unpackage_gogs () {
-  tar -xvf ${TMP_PATH}/${GOGS_BIN} -C ${TMP_PATH}
-  sudo mv -vf ${TMP_PATH}/gogs /opt/
+  tar -xvf ${TMP_PATH_GOGS}/${GOGS_BIN} -C ${TMP_PATH_GOGS}
+  sudo mv -vf ${TMP_PATH_GOGS}/gogs /opt/
   sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH_GOGS}
   sudo rm -rf ${INSTALLATION_PATH_GOGS}/scripts
 }
@@ -82,7 +83,7 @@ function create_folders_gogs () {
 function create_config_gogs () {
   ip_detect_v01
   random_alphanumeric 32
-  cat > ${TMP_PATH}/app.ini.newbie << EOF
+  cat > ${TMP_PATH_GOGS}/app.ini.newbie << EOF
   APP_NAME = ${NAME_REPOSITORY}
   RUN_USER = ${GOGS_USER}
   RUN_MODE = prod
@@ -131,12 +132,12 @@ function create_config_gogs () {
   SECRET_KEY   = ${RANDOM_ALPHANUMERIC}
 EOF
   has_sudo
-  sudo cp -v $TMP_PATH/app.ini.newbie /etc/gogs/config/app.ini
+  sudo cp -v $TMP_PATH_GOGS/app.ini.newbie /etc/gogs/config/app.ini
   sudo ln -s /etc/gogs/config/app.ini $INSTALLATION_PATH_GOGS/custom/conf/app.ini
 }
 
 function create_service_gogs() {
-  cat > ${TMP_PATH}/gogs.service.newbie << EOF
+  cat > ${TMP_PATH_GOGS}/gogs.service.newbie << EOF
   [Unit]
   Description=Gogs git server
   After=syslog.target
@@ -153,7 +154,7 @@ function create_service_gogs() {
   WantedBy=multi-user.target
 EOF
   has_sudo
-  sudo cp -v ${TMP_PATH}/gogs.service.newbie /etc/systemd/system/gogs.service
+  sudo cp -v ${TMP_PATH_GOGS}/gogs.service.newbie /etc/systemd/system/gogs.service
   sudo chmod 755 /etc/systemd/system/gogs.service
   sudo systemctl daemon-reload
   sudo systemctl enable gogs.service
@@ -161,9 +162,9 @@ EOF
 
 function create_data_base_sqlite () {
   cd ${INSTALLATION_PATH_GOGS}/data/sqlite
-  cd ${TMP_PATH}
+  cd ${TMP_PATH_GOGS}
   echo ".save gogs.db" | sqlite3
-  sudo mv -vf ${TMP_PATH}/gogs.db ${INSTALLATION_PATH_GOGS}/data/sqlite/.
+  sudo mv -vf ${TMP_PATH_GOGS}/gogs.db ${INSTALLATION_PATH_GOGS}/data/sqlite/.
   sudo chown -R $GOGS_USER:$GOGS_GROUP ${INSTALLATION_PATH_GOGS}/data/sqlite
   cd $NEWBIE_INSTALLER_PATH
 }
