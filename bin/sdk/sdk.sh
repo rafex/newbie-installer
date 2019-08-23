@@ -14,56 +14,41 @@
 # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
-# Date: 29 June 2019
+# Date: 09 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-. utils/is-root.sh
-. utils/color.sh
-. utils/distro.sh
-. utils/exit.sh
-. serv/web-proxy/nginx-compile.sh
+. sdk/golang.sh
 
-if is_root; then
-    red_text "Error: need to call this script as a normal user, not as root!"
-    exit 1
-fi
+function sdk_menu () {
+  local name_of_menu="Software Development Kit"
+  local option_1="Golang"
+  local option_2=""
 
-NEWBIE_INSTALLER_VERSION="0.1.0-SNAPSHOT"
-NEWBIE_INSTALLER_PATH=$(pwd)
-
-function runs_rookie_menu () {
   trap '' 2  # ignore control + c
   while true
   do
     local answer
     local input
     clear # clear screen for each loop of menu
-    red_text "Version: ${NEWBIE_INSTALLER_VERSION}"
     green_text "================================"
     green_text "================================"
     echo "-------------      -------------"
-    blue_text "------------- Menu -------------"
-    blue_text "------- Newbie Installer -------"
-    echo "-------                  -------"
-    green_text "----------- Distro   -----------"
-    what_distribution_are_you
+    red_text "${name_of_menu}"
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"
-    echo "Enter 1) Nginx compile"
+    echo "Enter 1) ${option_1}"
+    #echo "Enter 2) ${option_2}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) nginx_compile_menu ;;
+     1) golang_menu ;;
+     #2) blue_text "Hello" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"
     read input
   done
 }
-
-runs_rookie_menu

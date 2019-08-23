@@ -18,7 +18,19 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-find . -type f -iname "*.sh" -exec chmod a+x {} +
-# find . -type f -iname "*.sh" -exec chmod +x {} \;
+is_root () {
+    return $(id -u)
+}
 
-tar -zcvf newbie-installer.tar.gz bin/ --exclude=.DS_Store --exclude=.git*
+has_sudo () {
+    local prompt
+    prompt=$(sudo -nv 2>&1)
+    if [ $? -eq 0 ]; then
+    green_text "you have privileges!! :-)"
+    elif echo $prompt | grep -q '^sudo:'; then
+    blue_text "you need to authenticate!!! @-)"
+    else
+    red_text "You do not have privileges, I'm sorry!!! U.U"
+    exit
+    fi
+}

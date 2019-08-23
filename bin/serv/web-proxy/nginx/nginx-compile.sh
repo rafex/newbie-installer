@@ -14,8 +14,6 @@
  # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
 # Date: 29 June 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
@@ -23,12 +21,12 @@
 # . ../../utils/color.sh
 # . ../../utils/is-root.sh
 
-INITIAL_TEXT="Load module nginx compile"
 NAME_OF_THE_MODULE="Nginx compile"
-NGINX_INSTALLATION_PATH="/opt/nginx"
+INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
+INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH="/tmp"
+TMP_PATH="/opt"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
@@ -36,24 +34,28 @@ LIBRESSL_VERSION="libressl-2.9.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.1"
+NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
+
+URL_ZLIB="https://www.zlib.net/"
+URL_PCRE="https://ftp.pcre.org/pub/pcre/"
+URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
 }
 
 function download_libs () {
-  curl https://www.zlib.net/$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
-  curl ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
-  curl https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
+  curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH}/${ZLIB_SRC}
+  curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH}/${PCRE_SRC}
+  curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH}/${LIBRESSL_SRC}
 }
 
 function download_nginx () {
   curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH}/${NGINX_SRC}
 }
 
-function unpackage_libs () {
+function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH}/${ZLIB_SRC} -C ${TMP_PATH}
   tar -xvf ${TMP_PATH}/${PCRE_SRC} -C ${TMP_PATH}
   tar -xvf ${TMP_PATH}/${LIBRESSL_SRC} -C ${TMP_PATH}
@@ -63,23 +65,25 @@ function unpackage_nginx () {
   tar -xvf ${TMP_PATH}/${NGINX_SRC} -C ${TMP_PATH}
 }
 
-function install_dependencies_for_debian () {
+function install_dependencies_nginx_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
-  sudo apt -y install build-essential libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
+  sudo apt -y install build-essential
+  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
 }
 
-function install_dependencies_for_centos () {
+function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
-  sudo yum install libxml2-dev libxslt1-dev libgd-dev
+  sudo yum -y groupinstall "Development Tools"
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel
 }
 
-function install_dependencies () {
+function install_dependencies_nginx () {
   local distro=$(what_distribution_are_you)
   case $distro in
-    Debian) install_dependencies_for_debian ;;
-    CentOS) install_dependencies_for_centos ;;
+    debian) install_dependencies_nginx_for_debian ;;
+    centos) install_dependencies_nginx_for_centos ;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
@@ -126,7 +130,8 @@ EOF
       listen       80;
       listen       localhost:80;
       server_name  localhost;
-
+      server_tokens off;
+      
       charset koi8-r;
       access_log  /var/log/nginx/host.access.log  main;
 
@@ -172,7 +177,7 @@ function modified_html () {
 </style>
 </head>
 <body>
-<h1>Welcome to nginx!</h1>
+<h1>Welcome to nginx ${NGINX_VERSION}!</h1>
 <h2>Installed with Newbie Installer</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
@@ -230,13 +235,13 @@ function final_adjustments () {
   modified_html
 }
 
-function  create_user () {
+function  create_user_nginx () {
   has_sudo
-  sudo useradd --system $NGINX_USER
+  sudo useradd --system $NGINX_USER -d $INSTALLATION_PATH_NGINX
   sudo usermod -s /sbin/nologin $NGINX_USER
 }
 
-function create_folders () {
+function create_folders_nginx () {
   has_sudo
   sudo mkdir -p /var/cache/nginx/
   sudo mkdir -p /var/log/nginx/
@@ -244,7 +249,7 @@ function create_folders () {
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
 
-function create_service () {
+function create_service_nginx () {
   cat > ${TMP_PATH}/nginx.service.newbie << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
@@ -308,6 +313,7 @@ function configure_nginx () {
             --with-http_degradation_module \
             --with-http_slice_module \
             --with-http_stub_status_module \
+            --without-http_autoindex_module \
             --http-client-body-temp-path=/var/cache/nginx/client_temp \
             --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
             --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
@@ -344,12 +350,12 @@ function make_install_nginx () {
   sudo make install
   cd $NEWBIE_INSTALLER_PATH
 
-  create_user
-  create_folders
+  create_user_nginx
+  create_folders_nginx
   final_adjustments
 }
 
-function run_service () {
+function run_service_nginx () {
   has_sudo
   sudo systemctl start nginx
 }
@@ -359,11 +365,11 @@ function execute_nginx_compile () {
   sleep 1
   download_nginx
   sleep 1
-  unpackage_libs
+  unpackage_libs_nginx
   sleep 1
   unpackage_nginx
   sleep 1
-  install_dependencies
+  install_dependencies_nginx
   sleep 1
   configure_nginx
   sleep 2
@@ -371,12 +377,24 @@ function execute_nginx_compile () {
   sleep 2
   make_install_nginx
   sleep 2
-  create_service
+  create_service_nginx
   sleep 1
-  run_service
+  run_service_nginx
 }
 
 function nginx_compile_menu () {
+
+  local option_1="Download libs"
+  local option_2="Download Nginx"
+  local option_3="Unpackage libs"
+  local option_4="Unpackage Nginx"
+  local option_5="Install dependencies"
+  local option_6="Configure"
+  local option_7="Make"
+  local option_8="Make install"
+  local option_9="Create service"
+  local option_10="Start service"
+  local option_all="All"
   trap '' 2  # ignore control + c
   while true
   do
@@ -385,40 +403,37 @@ function nginx_compile_menu () {
     clear # clear screen for each loop of menu
     green_text "================================"
     green_text "================================"
-    echo "-------------      -------------"
-    blue_text "----------- Distro   -----------"
-    what_distribution_are_you
     echo "-----------          -----------"
     red_text "${NAME_OF_THE_MODULE}"
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"
-    echo "Enter 1) Download libs"
-    echo "Enter 2) Download Nginx"
-    echo "Enter 3) Unpackage libs"
-    echo "Enter 4) Unpackage Nginx"
-    echo "Enter 5) Install dependencies"
-    echo "Enter 6) Configure"
-    echo "Enter 7) Make"
-    echo "Enter 8) Make install"
-    echo "Enter 9) Create service"
-    echo "Enter 10) Start service"
-    echo "Enter a) All"
+    echo "Enter 1) ${option_1}"
+    echo "Enter 2) ${option_2}"
+    echo "Enter 3) ${option_3}"
+    echo "Enter 4) ${option_4}"
+    echo "Enter 5) ${option_5}"
+    echo "Enter 6) ${option_6}"
+    echo "Enter 7) ${option_7}"
+    echo "Enter 8) ${option_8}"
+    echo "Enter 9) ${option_9}"
+    echo "Enter 10) ${option_10}"
+    echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs ;;
-     2) download_nginx ;;
-     3) unpackage_libs ;;
-     4) unpackage_nginx ;;
-     5) install_dependencies ;;
-     6) configure_nginx ;;
-     7) make_nginx;;
-     8) make_install_nginx;;
-     9) create_service ;;
-     10) run_service ;;
-     a) execute_nginx_compile ;;
+     1) download_libs && green_text "Finished ${option_1}" ;;
+     2) download_nginx && green_text "Finished ${option_2}" ;;
+     3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
+     4) unpackage_nginx && green_text "Finished ${option_4}" ;;
+     5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
+     6) configure_nginx && green_text "Finished ${option_6}" ;;
+     7) make_nginx && green_text "Finished ${option_7}" ;;
+     8) make_install_nginx && green_text "Finished ${option_8}" ;;
+     9) create_service_nginx && green_text "Finished ${option_9}" ;;
+     10) run_service_nginx && green_text "Finished ${option_10}" ;;
+     a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
     red_text "Hit the <return> key to continue"

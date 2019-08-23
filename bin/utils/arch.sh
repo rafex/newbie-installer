@@ -14,11 +14,15 @@
 # limitations under the License.
 
 #!/bin/bash
-# Date: 29 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-find . -type f -iname "*.sh" -exec chmod a+x {} +
-# find . -type f -iname "*.sh" -exec chmod +x {} \;
-
-tar -zcvf newbie-installer.tar.gz bin/ --exclude=.DS_Store --exclude=.git*
+function arch() {
+  MACHINE_TYPE=`uname -m`
+  if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    return 64
+  else
+    return 32
+  fi
+}

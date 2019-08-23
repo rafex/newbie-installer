@@ -14,25 +14,10 @@
 # limitations under the License.
 
 #!/bin/bash
-
-#!/bin/bash
-# Date: 29 June 2019
+# Date: 08 July 2019
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-is_root () {
-    return $(id -u)
-}
-
-has_sudo () {
-    local prompt
-    prompt=$(sudo -nv 2>&1)
-    if [ $? -eq 0 ]; then
-    green_text "you have privileges!! :-)"
-    elif echo $prompt | grep -q '^sudo:'; then
-    blue_text "you need to authenticate!!! @-)"
-    else
-    red_text "You do not have privileges, I'm sorry!!! U.U"
-    exit
-    fi
+function random_alphanumeric() {
+  export RANDOM_ALPHANUMERIC=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1)
 }
