@@ -26,7 +26,8 @@ GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
 TMP_PATH_GOLANG="${HOME}/tmp/golang"
 
 function download_golang () {
-  curl https://dl.google.com/go/$GOLANG_BINARY --output ${TMP_PATH_GOLANG}/${GOLANG_BINARY}
+    mkdir -vp $TMP_PATH_GOLANG
+    curl https://dl.google.com/go/$GOLANG_BINARY --output ${TMP_PATH_GOLANG}/${GOLANG_BINARY}
 }
 
 function unpackage_golang () {
