@@ -282,6 +282,13 @@ EOF
   sudo systemctl enable nginx.service
 }
 
+function configure_modsecurity () {
+  cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
+  ./configure --enable-standalone-module \
+            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}
+  cd $NEWBIE_INSTALLER_PATH
+}
+
 function configure_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=/etc/nginx \
@@ -438,10 +445,11 @@ function nginx_compile_menu () {
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
      6) configure_nginx && green_text "Finished ${option_6}" ;;
-     7) make_nginx && green_text "Finished ${option_7}" ;;
-     8) make_install_nginx && green_text "Finished ${option_8}" ;;
-     9) create_service_nginx && green_text "Finished ${option_9}" ;;
-     10) run_service_nginx && green_text "Finished ${option_10}" ;;
+     7) configure_nginx && green_text "Finished ${option_7}" ;;
+     8) make_nginx && green_text "Finished ${option_8}" ;;
+     9) make_install_nginx && green_text "Finished ${option_9}" ;;
+     10) create_service_nginx && green_text "Finished ${option_10}" ;;
+     11) run_service_nginx && green_text "Finished ${option_11}" ;;
      a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
