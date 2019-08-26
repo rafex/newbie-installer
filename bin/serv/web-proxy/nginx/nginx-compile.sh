@@ -36,10 +36,12 @@ PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
+MODSECURITY_SRC="modsecurity.zip"
 
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
+URL_MODSECURITY="https://codeload.github.com/SpiderLabs/ModSecurity/zip/v3/master"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
@@ -50,6 +52,7 @@ function download_libs () {
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
+  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
 }
 
 function download_nginx () {
@@ -61,6 +64,7 @@ function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
+  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
 }
 
 function unpackage_nginx () {
@@ -78,7 +82,7 @@ function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel pcre-devel curl-devel
 }
 
 function install_dependencies_nginx () {
@@ -442,5 +446,3 @@ function nginx_compile_menu () {
     read input
   done
 }
-
-nginx_hello
