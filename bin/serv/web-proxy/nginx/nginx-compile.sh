@@ -54,6 +54,7 @@ function download_libs () {
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
+  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
 }
 
 function download_nginx () {
@@ -61,23 +62,15 @@ function download_nginx () {
   curl $URL_NGINX$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
 }
 
-function download_mod_security () {
-  mkdir -vp $TMP_PATH_NGINX
-  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
-}
-
 function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
+  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
 }
 
 function unpackage_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${NGINX_SRC} -C ${TMP_PATH_NGINX}
-}
-
-function unpackage_modsecurity () {
-  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
 }
 
 function install_dependencies_nginx_for_debian () {
@@ -383,13 +376,9 @@ function execute_nginx_compile () {
   sleep 1
   download_nginx
   sleep 1
-  download_mod_security
-  sleep 1
   unpackage_libs_nginx
   sleep 1
   unpackage_nginx
-  sleep 1
-  unpackage_modsecurity
   sleep 1
   install_dependencies_nginx
   sleep 1
@@ -445,9 +434,9 @@ function nginx_compile_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs && download_mod_security && green_text "Finished ${option_1}" ;;
+     1) download_libs && green_text "Finished ${option_1}" ;;
      2) download_nginx && green_text "Finished ${option_2}" ;;
-     3) unpackage_libs_nginx && unpackage_modsecurity && green_text "Finished ${option_3}" ;;
+     3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
      6) configure_nginx && green_text "Finished ${option_6}" ;;
