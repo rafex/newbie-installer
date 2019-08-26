@@ -83,7 +83,7 @@ function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel pcre-devel curl-devel
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel
 }
 
 function install_dependencies_nginx () {
@@ -286,6 +286,7 @@ function configure_modsecurity () {
   cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
   ./configure --enable-standalone-module \
             --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}
+  # make
   cd $NEWBIE_INSTALLER_PATH
 }
 
