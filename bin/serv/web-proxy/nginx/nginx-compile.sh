@@ -389,6 +389,8 @@ function execute_nginx_compile () {
   sleep 1
   unpackage_nginx
   sleep 1
+  unpackage_modsecurity
+  sleep 1
   install_dependencies_nginx
   sleep 1
   configure_nginx
@@ -445,7 +447,7 @@ function nginx_compile_menu () {
     case "$answer" in
      1) download_libs && download_mod_security && green_text "Finished ${option_1}" ;;
      2) download_nginx && green_text "Finished ${option_2}" ;;
-     3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
+     3) unpackage_libs_nginx && unpackage_modsecurity && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
      6) configure_nginx && green_text "Finished ${option_6}" ;;
