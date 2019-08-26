@@ -36,10 +36,14 @@ PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
+MODSECURITY_SRC="modsecurity.zip"
 
+URL_NGINX="https://nginx.org/download/"
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
+
+URL_MODSECURITY="https://github.com/SpiderLabs/ModSecurity/archive/v3/master.zip"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
@@ -54,7 +58,12 @@ function download_libs () {
 
 function download_nginx () {
   mkdir -vp $TMP_PATH_NGINX
-  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
+  curl $URL_NGINX$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
+}
+
+function download_mod_security () {
+  mkdir -vp $TMP_PATH_NGINX
+  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
 }
 
 function unpackage_libs_nginx () {
@@ -67,18 +76,22 @@ function unpackage_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${NGINX_SRC} -C ${TMP_PATH_NGINX}
 }
 
+function unpackage_modsecurity () {
+  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
+}
+
 function install_dependencies_nginx_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
   sudo apt -y install build-essential
-  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
+  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev unzip
 }
 
 function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel unzip
 }
 
 function install_dependencies_nginx () {
@@ -276,6 +289,9 @@ EOF
   sudo systemctl daemon-reload
   sudo systemctl enable nginx.service
 }
+function configure_nginx () {
+
+}
 
 function configure_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
@@ -367,6 +383,8 @@ function execute_nginx_compile () {
   sleep 1
   download_nginx
   sleep 1
+  download_mod_security
+  sleep 1
   unpackage_libs_nginx
   sleep 1
   unpackage_nginx
@@ -425,7 +443,7 @@ function nginx_compile_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs && green_text "Finished ${option_1}" ;;
+     1) download_libs && download_mod_security && green_text "Finished ${option_1}" ;;
      2) download_nginx && green_text "Finished ${option_2}" ;;
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
