@@ -37,6 +37,7 @@ PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
+MODSECURITY_FOLDER="ModSecurity"
 MODSECURITY_BRANCH="v3/master"
 
 URL_ZLIB="https://www.zlib.net/"
@@ -69,7 +70,7 @@ function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
-  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
+
 }
 
 function unpackage_nginx () {
@@ -288,6 +289,8 @@ EOF
 
 function configure_modsecurity () {
   cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
+  git submodule init
+  git submodule update
   ./build.sh
   ./configure --enable-standalone-module \
             --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}
