@@ -36,13 +36,14 @@ PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
 NGINX_VERSION="1.17.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
-MODSECURITY_SRC="modsecurity.zip"
-MODSECURITY_FOLDER="ModSecurity-3-master"
+
+MODSECURITY_BRANCH="v3/master"
 
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
-URL_MODSECURITY="https://codeload.github.com/SpiderLabs/ModSecurity/zip/v3/master"
+
+URL_GIT_MODSECURITY="https://github.com/SpiderLabs/ModSecurity.git"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
@@ -53,7 +54,10 @@ function download_libs () {
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
-  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
+  cd ${TMP_PATH_NGINX}
+  git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
+  cd $NEWBIE_INSTALLER_PATH
+
 }
 
 function download_nginx () {
@@ -76,14 +80,14 @@ function install_dependencies_nginx_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
   sudo apt -y install build-essential
-  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev
+  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev git
 }
 
 function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git
 }
 
 function install_dependencies_nginx () {
@@ -284,6 +288,7 @@ EOF
 
 function configure_modsecurity () {
   cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
+  ./build.sh
   ./configure --enable-standalone-module \
             --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}
   # make

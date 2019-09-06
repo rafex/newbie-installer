@@ -7,17 +7,17 @@ The intention of these scripts is to facilitate the installation of tools that a
 ### Debian / Ubuntu / Mint
 ```Shell
 $ sudo apt-get update
-$ sudo apt-get -y install build-essential
+$ sudo apt-get -y install build-essential git
 ```
 
 ### CentOS / RHEL 7/6/5
 ```Shell
 $ sudo yum update
-$ sudo yum groupinstall "Development Tools"
+$ sudo yum groupinstall "Development Tools" git
 ```
 
 ### Fedora 28/29/30
 ```Shell
 $ sudo dnf update
-$ sudo dnf groupinstall "Development Tools"
+$ sudo dnf groupinstall "Development Tools" git
 ```
