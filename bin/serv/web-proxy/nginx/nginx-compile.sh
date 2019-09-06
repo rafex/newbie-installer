@@ -445,7 +445,7 @@ function nginx_compile_menu () {
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
-     6) configure_nginx && green_text "Finished ${option_6}" ;;
+     6) configure_modsecurity && green_text "Finished ${option_6}" ;;
      7) configure_nginx && green_text "Finished ${option_7}" ;;
      8) make_nginx && green_text "Finished ${option_8}" ;;
      9) make_install_nginx && green_text "Finished ${option_9}" ;;
