@@ -288,6 +288,8 @@ EOF
 }
 
 function configure_modsecurity () {
+  cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
+  ./configure
   cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
   git submodule init
   git submodule update
