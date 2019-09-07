@@ -293,7 +293,7 @@ function configure_modsecurity () {
   git submodule update
   ./build.sh
   ./configure --enable-standalone-module \
-            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}
+            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/
   # make
   cd $NEWBIE_INSTALLER_PATH
 }
