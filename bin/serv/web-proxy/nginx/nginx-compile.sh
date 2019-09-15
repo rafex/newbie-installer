@@ -34,10 +34,9 @@ LIBRESSL_VERSION="libressl-2.9.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.2"
+NGINX_VERSION="1.17.3"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
-MODSECURITY_FOLDER="ModSecurity"
 MODSECURITY_BRANCH="v3/master"
 
 URL_ZLIB="https://www.zlib.net/"
@@ -45,6 +44,12 @@ URL_PCRE="https://ftp.pcre.org/pub/pcre/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
 
 URL_GIT_MODSECURITY="https://github.com/SpiderLabs/ModSecurity.git"
+URL_GIT_MODSECURITY_NGINX="https://github.com/SpiderLabs/ModSecurity-nginx"
+URL_OWASP_MODSECURITY_CRS="https://github.com/SpiderLabs/owasp-modsecurity-crs.git"
+
+FOLDER_MODSECURITY="ModSecurity"
+FOLDER_MODSECURITY_NGINX="ModSecurity-nginx"
+FOLDER_OWASP_MODSECURITY_CRS="owasp-modsecurity-crs"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
@@ -57,6 +62,8 @@ function download_libs () {
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
   cd ${TMP_PATH_NGINX}
   git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
+  git clone ${URL_GIT_MODSECURITY_NGINX}
+  git clone ${URL_OWASP_MODSECURITY_CRS}
   cd $NEWBIE_INSTALLER_PATH
 
 }
@@ -88,7 +95,7 @@ function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
 
 function install_dependencies_nginx () {
@@ -135,6 +142,7 @@ function nginx_conf_default () {
       gzip_buffers 16 8k;
       gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
       include   /etc/nginx/conf.d/*.conf;
+      include   /etc/nginx/sites-enabled/*.conf
   }
 EOF
   cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
@@ -243,6 +251,9 @@ function final_adjustments () {
   sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -p /etc/nginx/conf.d
+  sudo mkdir -p /etc/nginx/sites-available
+  sudo mkdir -p /etc/nginx/sites-enabled
+  sudo mkdir -p /etc/nginx/modsec
   nginx_conf_default
   modified_html
 }
@@ -290,13 +301,22 @@ EOF
 function configure_modsecurity () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
-  cd ${TMP_PATH_NGINX}/${MODSECURITY_FOLDER}
+  make
+  has_sudo
+  sudo make install
+  cd ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}
   git submodule init
   git submodule update
   ./build.sh
-  ./configure --enable-standalone-module \
-            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/
-  # make
+  ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/
+  make
+  has_sudo
+  make install
+
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
+  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}
+  make modules
+
   cd $NEWBIE_INSTALLER_PATH
 }
 
