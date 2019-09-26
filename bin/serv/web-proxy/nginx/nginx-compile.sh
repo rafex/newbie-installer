@@ -330,10 +330,10 @@ function install_modsecurity () {
   ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/
   make
   has_sudo
-  make install
+  sudo make install
 
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}
+  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
   make modules
   sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
