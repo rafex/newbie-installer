@@ -332,6 +332,7 @@ function install_modsecurity () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}
   make modules
+  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
   cd $NEWBIE_INSTALLER_PATH
 
