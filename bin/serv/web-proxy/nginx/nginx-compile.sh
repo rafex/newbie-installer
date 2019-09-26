@@ -145,7 +145,7 @@ function nginx_conf_default () {
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
       #tcp_nopush     on;
-      keepalive_timeout  65;
+
       gzip on;
       gzip_disable "msie6";
       gzip_vary on;
@@ -154,7 +154,7 @@ function nginx_conf_default () {
       gzip_buffers 16 8k;
       gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
       include   /etc/nginx/conf.d/*.conf;
-      include   /etc/nginx/sites-enabled/*.conf
+      include   /etc/nginx/sites-enabled/*.conf;
   }
 EOF
   cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
@@ -195,6 +195,9 @@ EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
   sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
+  cd /etc/nginx/sites-enabled
+  sudo ln -s ../sites-available/default-site.conf .
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 function modified_html () {
@@ -330,7 +333,7 @@ function install_modsecurity () {
   make install
 
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}
+  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}
   make modules
   sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
