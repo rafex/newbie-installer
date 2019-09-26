@@ -98,11 +98,19 @@ function install_dependencies_nginx_for_centos () {
   sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
 
+function install_dependencies_nginx_for_fedora () {
+  has_sudo
+  blue_text "Install dependencies for Fedora"
+  sudo dnf -y groupinstall "Development Tools"
+  sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
+}
+
 function install_dependencies_nginx () {
   local distro=$(what_distribution_are_you)
   case $distro in
     debian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
+    fedora) install_dependencies_nginx_for_fedora;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
@@ -115,6 +123,7 @@ function nginx_conf_default () {
   error_log  /var/log/nginx/error.log warn;
   pid        /var/run/nginx.pid;
 
+  load_module modules/ngx_http_modsecurity_module.so;
 
   events {
       worker_connections  1024;
