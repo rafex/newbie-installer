@@ -126,6 +126,18 @@ function nginx_conf_default () {
       include	  /etc/nginx/mime.types;
       default_type  application/octet-stream;
 
+      server_tokens off;
+
+      client_body_buffer_size 1k;
+      client_header_buffer_size 1k;
+      client_max_body_size 1k;
+      large_client_header_buffers 2 1k;
+
+      client_body_timeout 10;
+      client_header_timeout 10;
+      keepalive_timeout 5 5;
+      send_timeout 10;
+
       log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
                         '\$status \$body_bytes_sent "\$http_referer" '
                         '"\$http_user_agent" "\$http_x_forwarded_for"';
@@ -151,6 +163,9 @@ EOF
       listen       localhost:80;
       server_name  localhost;
       server_tokens off;
+
+      modsecurity on;
+      modsecurity_rules_file /etc/nginx/modsec/main.conf;
 
       charset koi8-r;
       access_log  /var/log/nginx/host.access.log  main;
@@ -179,7 +194,7 @@ EOF
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
-  sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
+  sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
 }
 
 function modified_html () {
@@ -241,19 +256,20 @@ EOF
   has_sudo
   sudo cp ${TMP_PATH_NGINX}/50x.html.newbie /usr/share/nginx/html/50x.html
   sudo cp ${TMP_PATH_NGINX}/index.html.newbie /usr/share/nginx/html/index.html
+  sudo rm -rf /usr/share/nginx/html/html
 }
 
 function final_adjustments () {
   has_sudo
   sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
-  sudo mkdir -p /usr/share/nginx
+  sudo mkdir -vp /usr/share/nginx
   sudo mv -v /etc/nginx/html /usr/share/nginx/html
   sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
   sudo rm -rfv /etc/nginx/*.default
-  sudo mkdir -p /etc/nginx/conf.d
-  sudo mkdir -p /etc/nginx/sites-available
-  sudo mkdir -p /etc/nginx/sites-enabled
-  sudo mkdir -p /etc/nginx/modsec
+  sudo mkdir -vp /etc/nginx/conf.d
+  sudo mkdir -vp /etc/nginx/sites-available
+  sudo mkdir -vp /etc/nginx/sites-enabled
+  sudo mkdir -vp /etc/nginx/modsec
   nginx_conf_default
   modified_html
 }
@@ -266,8 +282,8 @@ function  create_user_nginx () {
 
 function create_folders_nginx () {
   has_sudo
-  sudo mkdir -p /var/cache/nginx/
-  sudo mkdir -p /var/log/nginx/
+  sudo mkdir -vp /var/cache/nginx/
+  sudo mkdir -vp /var/log/nginx/
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
@@ -298,7 +314,7 @@ EOF
   sudo systemctl enable nginx.service
 }
 
-function configure_modsecurity () {
+function install_modsecurity () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
   make
@@ -318,7 +334,29 @@ function configure_modsecurity () {
   make modules
 
   cd $NEWBIE_INSTALLER_PATH
+
+  configure_modsecurity
 }
+
+function configure_modsecurity () {
+  cat > ${TMP_PATH_NGINX}/main.conf.newbie << EOF
+Include /etc/nginx/modsec/modsecurity.conf
+Include /etc/nginx/modsec/crs-setup.conf
+Include /etc/nginx/modsec/rules/*.conf
+EOF
+  cat > ${TMP_PATH_NGINX}/main.conf.newbie << EOF
+Include /etc/nginx/modsec/modsecurity.conf
+Include /etc/nginx/modsec/crs-setup.conf
+Include /etc/nginx/modsec/rules/*.conf
+EOF
+  has_sudo
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/unicode.mapping /etc/nginx/modsec/unicode.mapping
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_OWASP_MODSECURITY_CRS}/crs-setup.conf.example /etc/nginx/modsec/crs-setup.conf
+  sudo cp -vr ${TMP_PATH_NGINX}/${FOLDER_OWASP_MODSECURITY_CRS}/rules /etc/nginx/modsec/.
+
+}
+
 
 function configure_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
@@ -475,7 +513,7 @@ function nginx_compile_menu () {
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
-     6) configure_modsecurity && green_text "Finished ${option_6}" ;;
+     6) install_modsecurity && green_text "Finished ${option_6}" ;;
      7) configure_nginx && green_text "Finished ${option_7}" ;;
      8) make_nginx && green_text "Finished ${option_8}" ;;
      9) make_install_nginx && green_text "Finished ${option_9}" ;;
