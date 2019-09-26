@@ -344,12 +344,8 @@ Include /etc/nginx/modsec/modsecurity.conf
 Include /etc/nginx/modsec/crs-setup.conf
 Include /etc/nginx/modsec/rules/*.conf
 EOF
-  cat > ${TMP_PATH_NGINX}/main.conf.newbie << EOF
-Include /etc/nginx/modsec/modsecurity.conf
-Include /etc/nginx/modsec/crs-setup.conf
-Include /etc/nginx/modsec/rules/*.conf
-EOF
   has_sudo
+  sudo cp ${TMP_PATH_NGINX}/main.conf.newbie /etc/nginx/modsec/main.conf
   sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf
   sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/unicode.mapping /etc/nginx/modsec/unicode.mapping
   sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_OWASP_MODSECURITY_CRS}/crs-setup.conf.example /etc/nginx/modsec/crs-setup.conf
@@ -459,6 +455,8 @@ function execute_nginx_compile () {
   make_nginx
   sleep 2
   make_install_nginx
+  sleep 2
+  install_modsecurity
   sleep 2
   create_service_nginx
   sleep 1
