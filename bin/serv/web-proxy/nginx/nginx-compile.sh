@@ -100,8 +100,8 @@ function install_dependencies_nginx_for_centos () {
 
 function install_dependencies_nginx_for_fedora () {
   has_sudo
-  blue_text "Install dependencies for CentOS"
-  sudo dnf -y groupinstall "Development Tools"
+  blue_text "Install dependencies for Fedora"
+  sudo dnf -y groupinstall "C Development Tools and Libraries"
   sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
 
