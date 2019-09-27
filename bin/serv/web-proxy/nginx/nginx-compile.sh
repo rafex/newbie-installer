@@ -34,16 +34,22 @@ LIBRESSL_VERSION="libressl-2.9.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.2"
+NGINX_VERSION="1.17.4"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
-MODSECURITY_SRC="modsecurity.zip"
 
-URL_NGINX="https://nginx.org/download/"
+MODSECURITY_BRANCH="v3/master"
+
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
 
-URL_MODSECURITY="https://github.com/SpiderLabs/ModSecurity/archive/v3/master.zip"
+URL_GIT_MODSECURITY="https://github.com/SpiderLabs/ModSecurity.git"
+URL_GIT_MODSECURITY_NGINX="https://github.com/SpiderLabs/ModSecurity-nginx"
+URL_OWASP_MODSECURITY_CRS="https://github.com/SpiderLabs/owasp-modsecurity-crs.git"
+
+FOLDER_MODSECURITY="ModSecurity"
+FOLDER_MODSECURITY_NGINX="ModSecurity-nginx"
+FOLDER_OWASP_MODSECURITY_CRS="owasp-modsecurity-crs"
 
 function nginx_hello () {
   blue_text "${INITIAL_TEXT}"
@@ -54,19 +60,24 @@ function download_libs () {
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
-  curl $URL_MODSECURITY --output ${TMP_PATH_NGINX}/${MODSECURITY_SRC}
+  cd ${TMP_PATH_NGINX}
+  git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
+  git clone ${URL_GIT_MODSECURITY_NGINX}
+  git clone ${URL_OWASP_MODSECURITY_CRS}
+  cd $NEWBIE_INSTALLER_PATH
+
 }
 
 function download_nginx () {
   mkdir -vp $TMP_PATH_NGINX
-  curl $URL_NGINX$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
+  curl https://nginx.org/download/$NGINX_SRC --output ${TMP_PATH_NGINX}/${NGINX_SRC}
 }
 
 function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
-  unzip ${TMP_PATH_NGINX}/${MODSECURITY_SRC} -d ${TMP_PATH_NGINX}
+
 }
 
 function unpackage_nginx () {
@@ -77,14 +88,22 @@ function install_dependencies_nginx_for_debian () {
   has_sudo
   red_text "Install dependencies for Debian"
   sudo apt -y install build-essential
-  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev unzip
+  sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev git
 }
 
 function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
   sudo yum -y groupinstall "Development Tools"
-  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel unzip
+  sudo yum -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
+}
+
+function install_dependencies_nginx_for_fedora () {
+  has_sudo
+  blue_text "Install dependencies for Fedora"
+  sudo dnf -y groupinstall "Development Tools"
+  sudo dnf -y groupinstall "C Development Tools and Libraries"
+  sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
 
 function install_dependencies_nginx () {
@@ -92,6 +111,7 @@ function install_dependencies_nginx () {
   case $distro in
     debian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
+    fedora) install_dependencies_nginx_for_fedora ;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
@@ -104,6 +124,7 @@ function nginx_conf_default () {
   error_log  /var/log/nginx/error.log warn;
   pid        /var/run/nginx.pid;
 
+  load_module modules/ngx_http_modsecurity_module.so;
 
   events {
       worker_connections  1024;
@@ -115,6 +136,18 @@ function nginx_conf_default () {
       include	  /etc/nginx/mime.types;
       default_type  application/octet-stream;
 
+      server_tokens off;
+
+      client_body_buffer_size 1k;
+      client_header_buffer_size 1k;
+      client_max_body_size 1k;
+      large_client_header_buffers 2 1k;
+
+      client_body_timeout 10;
+      client_header_timeout 10;
+      keepalive_timeout 5 5;
+      send_timeout 10;
+
       log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
                         '\$status \$body_bytes_sent "\$http_referer" '
                         '"\$http_user_agent" "\$http_x_forwarded_for"';
@@ -122,7 +155,7 @@ function nginx_conf_default () {
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
       #tcp_nopush     on;
-      keepalive_timeout  65;
+
       gzip on;
       gzip_disable "msie6";
       gzip_vary on;
@@ -131,6 +164,7 @@ function nginx_conf_default () {
       gzip_buffers 16 8k;
       gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
       include   /etc/nginx/conf.d/*.conf;
+      include   /etc/nginx/sites-enabled/*.conf;
   }
 EOF
   cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
@@ -139,6 +173,9 @@ EOF
       listen       localhost:80;
       server_name  localhost;
       server_tokens off;
+
+      modsecurity on;
+      modsecurity_rules_file /etc/nginx/modsec/main.conf;
 
       charset koi8-r;
       access_log  /var/log/nginx/host.access.log  main;
@@ -167,10 +204,14 @@ EOF
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
-  sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/conf.d/default-site.conf
+  sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
+  cd /etc/nginx/sites-enabled
+  sudo ln -s ../sites-available/default-site.conf .
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 function modified_html () {
+  local distro=$(what_distribution_are_you)
   cat > ${TMP_PATH_NGINX}/index.html.newbie << EOF
 <!DOCTYPE html>
 <html>
@@ -186,7 +227,7 @@ function modified_html () {
 </head>
 <body>
 <h1>Welcome to nginx ${NGINX_VERSION}!</h1>
-<h2>Installed with Newbie Installer</h2>
+<h2>Installed with Newbie Installer in ${distro}</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
 
@@ -229,16 +270,20 @@ EOF
   has_sudo
   sudo cp ${TMP_PATH_NGINX}/50x.html.newbie /usr/share/nginx/html/50x.html
   sudo cp ${TMP_PATH_NGINX}/index.html.newbie /usr/share/nginx/html/index.html
+  sudo rm -rf /usr/share/nginx/html/html
 }
 
 function final_adjustments () {
   has_sudo
   sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
-  sudo mkdir -p /usr/share/nginx
+  sudo mkdir -vp /usr/share/nginx
   sudo mv -v /etc/nginx/html /usr/share/nginx/html
   sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
   sudo rm -rfv /etc/nginx/*.default
-  sudo mkdir -p /etc/nginx/conf.d
+  sudo mkdir -vp /etc/nginx/conf.d
+  sudo mkdir -vp /etc/nginx/sites-available
+  sudo mkdir -vp /etc/nginx/sites-enabled
+  sudo mkdir -vp /etc/nginx/modsec
   nginx_conf_default
   modified_html
 }
@@ -251,8 +296,8 @@ function  create_user_nginx () {
 
 function create_folders_nginx () {
   has_sudo
-  sudo mkdir -p /var/cache/nginx/
-  sudo mkdir -p /var/log/nginx/
+  sudo mkdir -vp /var/cache/nginx/
+  sudo mkdir -vp /var/log/nginx/
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
@@ -282,9 +327,49 @@ EOF
   sudo systemctl daemon-reload
   sudo systemctl enable nginx.service
 }
-function configure_nginx () {
+
+function install_modsecurity () {
+  cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
+  ./configure
+  make
+  has_sudo
+  sudo make install
+  cd ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}
+  git submodule init
+  git submodule update
+  ./build.sh
+  ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
+    --prefix=/opt/modsecurity \
+    --with-libmodsecurity
+  make
+  has_sudo
+  sudo make install
+
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
+  ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
+  make modules
+  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
+
+  cd $NEWBIE_INSTALLER_PATH
+
+  configure_modsecurity
+}
+
+function configure_modsecurity () {
+  cat > ${TMP_PATH_NGINX}/main.conf.newbie << EOF
+Include /etc/nginx/modsec/modsecurity.conf
+Include /etc/nginx/modsec/crs-setup.conf
+Include /etc/nginx/modsec/rules/*.conf
+EOF
+  has_sudo
+  sudo cp ${TMP_PATH_NGINX}/main.conf.newbie /etc/nginx/modsec/main.conf
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}/unicode.mapping /etc/nginx/modsec/unicode.mapping
+  sudo cp -v ${TMP_PATH_NGINX}/${FOLDER_OWASP_MODSECURITY_CRS}/crs-setup.conf.example /etc/nginx/modsec/crs-setup.conf
+  sudo cp -vr ${TMP_PATH_NGINX}/${FOLDER_OWASP_MODSECURITY_CRS}/rules /etc/nginx/modsec/.
 
 }
+
 
 function configure_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
@@ -388,6 +473,8 @@ function execute_nginx_compile () {
   sleep 2
   make_install_nginx
   sleep 2
+  install_modsecurity
+  sleep 2
   create_service_nginx
   sleep 1
   run_service_nginx
@@ -400,11 +487,12 @@ function nginx_compile_menu () {
   local option_3="Unpackage libs"
   local option_4="Unpackage Nginx"
   local option_5="Install dependencies"
-  local option_6="Configure"
-  local option_7="Make"
-  local option_8="Make install"
-  local option_9="Create service"
-  local option_10="Start service"
+  local option_6="Configure and compile ModSecurity 3"
+  local option_7="Configure nginx"
+  local option_8="Make nginx"
+  local option_9="Make install"
+  local option_10="Create service"
+  local option_11="Start service"
   local option_all="All"
   trap '' 2  # ignore control + c
   while true
@@ -429,6 +517,7 @@ function nginx_compile_menu () {
     echo "Enter 8) ${option_8}"
     echo "Enter 9) ${option_9}"
     echo "Enter 10) ${option_10}"
+    echo "Enter 11) ${option_11}"
     echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
@@ -439,11 +528,12 @@ function nginx_compile_menu () {
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
-     6) configure_nginx && green_text "Finished ${option_6}" ;;
-     7) make_nginx && green_text "Finished ${option_7}" ;;
-     8) make_install_nginx && green_text "Finished ${option_8}" ;;
-     9) create_service_nginx && green_text "Finished ${option_9}" ;;
-     10) run_service_nginx && green_text "Finished ${option_10}" ;;
+     6) install_modsecurity && green_text "Finished ${option_6}" ;;
+     7) configure_nginx && green_text "Finished ${option_7}" ;;
+     8) make_nginx && green_text "Finished ${option_8}" ;;
+     9) make_install_nginx && green_text "Finished ${option_9}" ;;
+     10) create_service_nginx && green_text "Finished ${option_10}" ;;
+     11) run_service_nginx && green_text "Finished ${option_11}" ;;
      a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
@@ -451,5 +541,3 @@ function nginx_compile_menu () {
     read input
   done
 }
-
-nginx_hello
