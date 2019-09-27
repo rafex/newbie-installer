@@ -20,6 +20,7 @@
 
 DISTRO_DEBIAN="debian"
 DISTRO_CENTOS="centos"
+DISTRO_FEDORA="fedora"
 DISTRO_RHEL="Red Hat Enterprise Linux Server"
 RULZZ="rulzz!!"
 
@@ -29,6 +30,8 @@ function what_distribution_are_you () {
     echo $DISTRO_DEBIAN
   elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
     echo $DISTRO_CENTOS
+  elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
+    echo $DISTRO_FEDORA    
   fi
 }
 
