@@ -123,6 +123,7 @@ function nginx_conf_default () {
   error_log  /var/log/nginx/error.log warn;
   pid        /var/run/nginx.pid;
 
+  load_module modules/ngx_http_modsecurity_module.so;
 
   events {
       worker_connections  1024;
@@ -345,7 +346,7 @@ function install_modsecurity () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
   make modules
-  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 
   cd $NEWBIE_INSTALLER_PATH
 
