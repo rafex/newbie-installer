@@ -19,5 +19,5 @@ $ sudo yum groupinstall "Development Tools" git
 ### Fedora 28/29/30
 ```Shell
 $ sudo dnf update
-$ sudo dnf groupinstall "Development Tools" git
+$ sudo dnf groupinstall "C Development Tools and Libraries" git
 ```
