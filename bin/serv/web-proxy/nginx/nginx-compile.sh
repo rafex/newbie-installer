@@ -101,6 +101,7 @@ function install_dependencies_nginx_for_centos () {
 function install_dependencies_nginx_for_fedora () {
   has_sudo
   blue_text "Install dependencies for Fedora"
+  sudo dnf -y groupinstall "Development Tools"
   sudo dnf -y groupinstall "C Development Tools and Libraries"
   sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
@@ -210,6 +211,7 @@ EOF
 }
 
 function modified_html () {
+  local distro=$(what_distribution_are_you)
   cat > ${TMP_PATH_NGINX}/index.html.newbie << EOF
 <!DOCTYPE html>
 <html>
@@ -225,7 +227,7 @@ function modified_html () {
 </head>
 <body>
 <h1>Welcome to nginx ${NGINX_VERSION}!</h1>
-<h2>Installed with Newbie Installer</h2>
+<h2>Installed with Newbie Installer in ${distro}</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
 
