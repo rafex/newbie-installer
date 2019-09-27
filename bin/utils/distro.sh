@@ -30,8 +30,8 @@ function what_distribution_are_you () {
     echo $DISTRO_DEBIAN
   elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
     echo $DISTRO_CENTOS
-  elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
-    echo $DISTRO_FEDORA    
+  elif [[ $distro == *${DISTRO_FEDORA}* ]]; then
+    echo $DISTRO_FEDORA
   fi
 }
 
