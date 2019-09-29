@@ -101,7 +101,6 @@ function install_dependencies_nginx_for_centos () {
 function install_dependencies_nginx_for_fedora () {
   has_sudo
   blue_text "Install dependencies for Fedora"
-  sudo dnf -y groupinstall "Development Tools"
   sudo dnf -y groupinstall "C Development Tools and Libraries"
   sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
@@ -111,7 +110,7 @@ function install_dependencies_nginx () {
   case $distro in
     debian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
-    fedora) install_dependencies_nginx_for_fedora ;;
+    fedora) install_dependencies_nginx_for_fedora;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
   esac
 }
