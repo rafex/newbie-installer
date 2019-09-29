@@ -27,6 +27,7 @@
 . utils/random.sh
 . utils/arch.sh
 . utils/profile.sh
+. utils/path.sh
 . utils/exit.sh
 . serv/serv.sh
 . sdk/sdk.sh

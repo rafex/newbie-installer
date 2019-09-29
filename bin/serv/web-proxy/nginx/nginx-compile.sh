@@ -26,7 +26,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 #INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH_NGINX="${HOME}/tmp/nginx"
+TMP_PATH_NGINX="/opt/tmp/nginx"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
@@ -51,12 +51,13 @@ FOLDER_MODSECURITY="ModSecurity"
 FOLDER_MODSECURITY_NGINX="ModSecurity-nginx"
 FOLDER_OWASP_MODSECURITY_CRS="owasp-modsecurity-crs"
 
-function nginx_hello () {
-  blue_text "${INITIAL_TEXT}"
+function path_nginx () {
+  has_sudo
+  sudo mkdir -vp $TMP_PATH_NGINX
+  sudo chown $USER:$USER $TMP_PATH_NGINX
 }
 
 function download_libs () {
-  mkdir -vp $TMP_PATH_NGINX
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
@@ -456,6 +457,8 @@ function run_service_nginx () {
 }
 
 function execute_nginx_compile () {
+  path_nginx
+  sleep 1
   download_libs
   sleep 1
   download_nginx
@@ -522,8 +525,8 @@ function nginx_compile_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs && green_text "Finished ${option_1}" ;;
-     2) download_nginx && green_text "Finished ${option_2}" ;;
+     1) path_nginx && download_libs && green_text "Finished ${option_1}" ;;
+     2) path_nginx && download_nginx && green_text "Finished ${option_2}" ;;
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
