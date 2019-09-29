@@ -339,7 +339,7 @@ function install_modsecurity () {
   git submodule update
   ./build.sh
   ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
-    --prefix=/opt/modsecurity \
+    #--prefix=/opt/modsecurity \
     --with-libmodsecurity
   make
   has_sudo
