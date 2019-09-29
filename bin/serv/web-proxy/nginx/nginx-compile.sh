@@ -345,6 +345,10 @@ function install_modsecurity () {
   has_sudo
   sudo make install
 
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function module_modsecurity_nginx (){
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
   make modules
@@ -352,7 +356,6 @@ function install_modsecurity () {
   sudo cp -vr objs/ngx_http_modsecurity_module.so /tmp/.
 
   cd $NEWBIE_INSTALLER_PATH
-
   configure_modsecurity
 }
 
@@ -476,9 +479,10 @@ function execute_nginx_compile () {
   sleep 2
   make_install_nginx
   sleep 2
+  create_service_nginx
   install_modsecurity
   sleep 2
-  create_service_nginx
+  module_modsecurity_nginx
   sleep 1
   run_service_nginx
 }
@@ -490,12 +494,13 @@ function nginx_compile_menu () {
   local option_3="Unpackage libs"
   local option_4="Unpackage Nginx"
   local option_5="Install dependencies"
-  local option_6="Configure and compile ModSecurity 3"
-  local option_7="Configure nginx"
-  local option_8="Make nginx"
-  local option_9="Make install"
-  local option_10="Create service"
-  local option_11="Start service"
+  local option_6="Configure nginx"
+  local option_7="Make nginx"
+  local option_8="Make install nginx"
+  local option_9="Create service"
+  local option_10="Configure and compile ModSecurity 3"
+  local option_11="ModSecurity - Nginx"
+  local option_12="Start service"
   local option_all="All"
   trap '' 2  # ignore control + c
   while true
@@ -521,6 +526,7 @@ function nginx_compile_menu () {
     echo "Enter 9) ${option_9}"
     echo "Enter 10) ${option_10}"
     echo "Enter 11) ${option_11}"
+    echo "Enter 12) ${option_12}"
     echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
@@ -531,12 +537,13 @@ function nginx_compile_menu () {
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
-     6) install_modsecurity && green_text "Finished ${option_6}" ;;
-     7) configure_nginx && green_text "Finished ${option_7}" ;;
-     8) make_nginx && green_text "Finished ${option_8}" ;;
-     9) make_install_nginx && green_text "Finished ${option_9}" ;;
-     10) create_service_nginx && green_text "Finished ${option_10}" ;;
-     11) run_service_nginx && green_text "Finished ${option_11}" ;;
+     6) configure_nginx && green_text "Finished ${option_6}" ;;
+     7) make_nginx && green_text "Finished ${option_7}" ;;
+     8) make_install_nginx && green_text "Finished ${option_8}" ;;
+     9) create_service_nginx && green_text "Finished ${option_9}" ;;
+     10) install_modsecurity && green_text "Finished ${option_10}" ;;
+     11) module_modsecurity_nginx && green_text "Finished ${option_11}" ;;
+     12) run_service_nginx && green_text "Finished ${option_12}" ;;
      a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
