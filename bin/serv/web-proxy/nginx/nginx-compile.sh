@@ -26,7 +26,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 #INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH_NGINX="/opt/tmp/nginx"
+TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"

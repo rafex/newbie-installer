@@ -23,7 +23,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
-TMP_PATH_GOGS="/opt/tmp/gogs"
+TMP_PATH_GOGS="/opt/gogs-newbie-installer"
 GOGS_PORT=3000
 NAME_REPOSITORY="Newbie Installer Repository"
 

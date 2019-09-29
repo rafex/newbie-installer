@@ -23,7 +23,7 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOLANG="/usr/local/go"
 GOLANG_VERSION="1.12.9"
 GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
-TMP_PATH_GOLANG="/opt/tmp/golang"
+TMP_PATH_GOLANG="/opt/golang-newbie-installer"
 
 function path_golang () {
   has_sudo
