@@ -34,7 +34,7 @@ LIBRESSL_VERSION="libressl-2.9.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.3"
+NGINX_VERSION="1.17.4"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
@@ -101,7 +101,7 @@ function install_dependencies_nginx_for_centos () {
 function install_dependencies_nginx_for_fedora () {
   has_sudo
   blue_text "Install dependencies for Fedora"
-  sudo dnf -y groupinstall "Development Tools"
+  sudo dnf -y groupinstall "C Development Tools and Libraries"
   sudo dnf -y install curl gd-devel GeoIP-devel gperftools-devel libxslt-devel libxml2-devel libatomic_ops-devel curl-devel git gcc-c++ flex bison yajl yajl-devel doxygen
 }
 
@@ -210,6 +210,7 @@ EOF
 }
 
 function modified_html () {
+  local distro=$(what_distribution_are_you)
   cat > ${TMP_PATH_NGINX}/index.html.newbie << EOF
 <!DOCTYPE html>
 <html>
@@ -225,7 +226,7 @@ function modified_html () {
 </head>
 <body>
 <h1>Welcome to nginx ${NGINX_VERSION}!</h1>
-<h2>Installed with Newbie Installer</h2>
+<h2>Installed with Newbie Installer in ${distro}</h2>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
 
@@ -336,7 +337,9 @@ function install_modsecurity () {
   git submodule init
   git submodule update
   ./build.sh
-  ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/
+  ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
+    --prefix=/opt/modsecurity \
+    --with-libmodsecurity
   make
   has_sudo
   sudo make install
@@ -344,7 +347,7 @@ function install_modsecurity () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
   make modules
-  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 
   cd $NEWBIE_INSTALLER_PATH
 
