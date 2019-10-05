@@ -117,6 +117,40 @@ function install_dependencies_nginx () {
 }
 
 function nginx_conf_default () {
+  cat > ${TMP_PATH_NGINX}/client.conf.newbie << EOF
+  client_body_buffer_size 1k;
+  client_header_buffer_size 1k;
+  client_max_body_size 1k;
+  large_client_header_buffers 2 1k;
+
+  client_body_timeout 10;
+  client_header_timeout 10;
+EOF
+
+  cat > ${TMP_PATH_NGINX}/gzip.conf.newbie << EOF
+  gzip on;
+  gzip_disable "msie6";
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 9;
+  gzip_buffers 16 8k;
+  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+EOF
+
+  cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
+  proxy_redirect          off;
+  proxy_set_header        Host            $host;
+  proxy_set_header        X-Real-IP       $remote_addr;
+  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_connect_timeout   90;
+  proxy_send_timeout      90;
+  proxy_read_timeout      90;
+  proxy_buffers           32 4k;
+EOF
+  cat > ${TMP_PATH_NGINX}/timeout.conf.newbie << EOF
+  send_timeout 60;
+  keepalive_timeout 5 5;
+EOF
   cat > ${TMP_PATH_NGINX}/nginx.conf.newbie << EOF
   user  ${NGINX_USER};
   worker_processes  4;
@@ -134,19 +168,10 @@ function nginx_conf_default () {
 
   http {
       include	  /etc/nginx/mime.types;
+      include   /etc/nginx/conf.d/*.conf;
       default_type  application/octet-stream;
 
       server_tokens off;
-
-      client_body_buffer_size 1k;
-      client_header_buffer_size 1k;
-      client_max_body_size 1k;
-      large_client_header_buffers 2 1k;
-
-      client_body_timeout 10;
-      client_header_timeout 10;
-      keepalive_timeout 5 5;
-      send_timeout 10;
 
       log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
                         '\$status \$body_bytes_sent "\$http_referer" '
@@ -154,16 +179,8 @@ function nginx_conf_default () {
 
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
-      #tcp_nopush     on;
+      tcp_nopush     on;
 
-      gzip on;
-      gzip_disable "msie6";
-      gzip_vary on;
-      gzip_proxied any;
-      gzip_comp_level 9;
-      gzip_buffers 16 8k;
-      gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-      include   /etc/nginx/conf.d/*.conf;
       include   /etc/nginx/sites-enabled/*.conf;
   }
 EOF
@@ -203,6 +220,10 @@ EOF
   }
 EOF
   has_sudo
+  sudo cp -v ${TMP_PATH_NGINX}/client.conf.newbie /etc/nginx/conf.d/client.conf
+  sudo cp -v ${TMP_PATH_NGINX}/gzip.conf.newbie /etc/nginx/conf.d/gzip.conf
+  sudo cp -v ${TMP_PATH_NGINX}/proxy.conf.newbie /etc/nginx/conf.d/proxy.conf
+  sudo cp -v ${TMP_PATH_NGINX}/timeout.conf.newbie /etc/nginx/conf.d/timeout.conf
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
   sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
   cd /etc/nginx/sites-enabled
@@ -328,12 +349,32 @@ EOF
   sudo systemctl enable nginx.service
 }
 
-function install_modsecurity () {
+function install_zlib () {
+  cd ${TMP_PATH_NGINX}/${ZLIB_VERSION}
+  ./configure
+  make
+  has_sudo
+  sudo make install
+}
+
+function install_libressl () {
+  cd ${TMP_PATH_NGINX}/${LIBRESSL_VERSION}
+  ./configure
+  make
+  has_sudo
+  sudo make install
+}
+
+function install_pcre () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
   make
   has_sudo
   sudo make install
+}
+
+function install_modsecurity () {
+
   cd ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}
   git submodule init
   git submodule update
