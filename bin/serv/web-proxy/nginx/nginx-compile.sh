@@ -358,6 +358,7 @@ function install_zlib () {
   make
   has_sudo
   sudo make install
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_libressl () {
@@ -366,6 +367,7 @@ function install_libressl () {
   make
   has_sudo
   sudo make install
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_pcre () {
@@ -374,6 +376,7 @@ function install_pcre () {
   make
   has_sudo
   sudo make install
+  cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_modsecurity () {
