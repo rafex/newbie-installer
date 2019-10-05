@@ -197,7 +197,7 @@ EOF
       modsecurity on;
       modsecurity_rules_file /etc/nginx/modsec/main.conf;
 
-      charset koi8-r;
+      charset UTF-8;
       access_log  /var/log/nginx/host.access.log  main;
 
       location / {
