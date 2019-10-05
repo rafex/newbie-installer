@@ -79,6 +79,9 @@ function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
 
+  install_pcre
+  install_libressl
+  install_zlib
 }
 
 function unpackage_nginx () {
