@@ -142,9 +142,9 @@ EOF
 
   cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
   proxy_redirect          off;
-  proxy_set_header        Host            $host;
-  proxy_set_header        X-Real-IP       $remote_addr;
-  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header        Host            \$host;
+  proxy_set_header        X-Real-IP       \$remote_addr;
+  proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
   proxy_connect_timeout   90;
   proxy_send_timeout      90;
   proxy_read_timeout      90;
@@ -337,10 +337,16 @@ Wants=network-online.target
 [Service]
 Type=forking
 PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/bin/rm -f /run/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP \$MAINPID
 ExecStop=/bin/kill -s TERM \$MAINPID
+
+KillSignal=SIGQUIT
+TimeoutStopSec=5
+KillMode=process
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
