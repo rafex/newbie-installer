@@ -23,7 +23,13 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOLANG="/usr/local/go"
 GOLANG_VERSION="1.12.9"
 GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
-TMP_PATH_GOLANG="${HOME}/tmp/golang"
+TMP_PATH_GOLANG="/opt/golang-newbie-installer"
+
+function path_golang () {
+  has_sudo
+  sudo mkdir -vp $TMP_PATH_GOLANG
+  sudo chown $USER:$USER $TMP_PATH_GOLANG
+}
 
 function download_golang () {
     mkdir -vp $TMP_PATH_GOLANG
@@ -49,6 +55,8 @@ function install_golang() {
 }
 
 function execute_all_golang() {
+  path_golang
+  sleep 2
   install_golang
 }
 
@@ -76,7 +84,7 @@ function golang_menu () {
    yellow_text "Enter your selection here and hit <return>"
    read answer
    case "$answer" in
-    1) download_golang && green_text "Finished ${option_1}" ;;
+    1) path_golang && download_golang && green_text "Finished ${option_1}" ;;
     2) install_golang && green_text "Finished ${option_2}" ;;
     a) execute_all_golang && green_text "Finished ${option_all}" ;;
     q) good_bye ;;

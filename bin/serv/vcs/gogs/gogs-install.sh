@@ -23,12 +23,18 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
-TMP_PATH_GOGS="${HOME}/tmp/gogs"
+TMP_PATH_GOGS="/opt/gogs-newbie-installer"
 GOGS_PORT=3000
 NAME_REPOSITORY="Newbie Installer Repository"
 
 GOGS_VERSION="0.11.79"
 GOGS_BIN="gogs_${GOGS_VERSION}_linux_amd64.tar.gz"
+
+function path_gogs () {
+  has_sudo
+  sudo mkdir -vp $TMP_PATH_GOGS
+  sudo chown $USER:$USER $TMP_PATH_GOGS
+}
 
 function install_dependencies_gogs_for_debian () {
   has_sudo
@@ -189,6 +195,8 @@ function install_gogs () {
 }
 
 function execute_all_gogs() {
+  path_gogs
+  sleep 2
   download_gogs
   sleep 2
   install_gogs
@@ -225,7 +233,7 @@ function gogs_install_menu () {
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) install_dependencies_gogs && download_gogs && green_text "Finished ${option_1}" ;;
+     1) path_gogs && install_dependencies_gogs && download_gogs && green_text "Finished ${option_1}" ;;
      2) install_dependencies_gogs && install_gogs && green_text "Finished ${option_2}" ;;
      3) create_service_gogs && green_text "Finished ${option_3}" ;;
      4) run_service_gogs && green_text "Finished ${option_4}" ;;
