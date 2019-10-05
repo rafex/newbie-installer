@@ -26,11 +26,11 @@ INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
 #INSTALLATION_PATH_NGINX="/opt/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
-TMP_PATH_NGINX="${HOME}/tmp/nginx"
+TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-2.9.2"
+LIBRESSL_VERSION="libressl-3.0.0"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.43"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
@@ -51,12 +51,13 @@ FOLDER_MODSECURITY="ModSecurity"
 FOLDER_MODSECURITY_NGINX="ModSecurity-nginx"
 FOLDER_OWASP_MODSECURITY_CRS="owasp-modsecurity-crs"
 
-function nginx_hello () {
-  blue_text "${INITIAL_TEXT}"
+function path_nginx () {
+  has_sudo
+  sudo mkdir -vp $TMP_PATH_NGINX
+  sudo chown $USER:$USER $TMP_PATH_NGINX
 }
 
 function download_libs () {
-  mkdir -vp $TMP_PATH_NGINX
   curl $URL_ZLIB$ZLIB_SRC --output ${TMP_PATH_NGINX}/${ZLIB_SRC}
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
@@ -78,6 +79,9 @@ function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
 
+  install_pcre
+  install_libressl
+  install_zlib
 }
 
 function unpackage_nginx () {
@@ -116,6 +120,40 @@ function install_dependencies_nginx () {
 }
 
 function nginx_conf_default () {
+  cat > ${TMP_PATH_NGINX}/client.conf.newbie << EOF
+  client_body_buffer_size 1k;
+  client_header_buffer_size 1k;
+  client_max_body_size 1k;
+  large_client_header_buffers 2 1k;
+
+  client_body_timeout 10;
+  client_header_timeout 10;
+EOF
+
+  cat > ${TMP_PATH_NGINX}/gzip.conf.newbie << EOF
+  gzip on;
+  gzip_disable "msie6";
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 9;
+  gzip_buffers 16 8k;
+  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+EOF
+
+  cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
+  proxy_redirect          off;
+  proxy_set_header        Host            $host;
+  proxy_set_header        X-Real-IP       $remote_addr;
+  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_connect_timeout   90;
+  proxy_send_timeout      90;
+  proxy_read_timeout      90;
+  proxy_buffers           32 4k;
+EOF
+  cat > ${TMP_PATH_NGINX}/timeout.conf.newbie << EOF
+  send_timeout 60;
+  keepalive_timeout 5 5;
+EOF
   cat > ${TMP_PATH_NGINX}/nginx.conf.newbie << EOF
   user  ${NGINX_USER};
   worker_processes  4;
@@ -133,19 +171,10 @@ function nginx_conf_default () {
 
   http {
       include	  /etc/nginx/mime.types;
+      include   /etc/nginx/conf.d/*.conf;
       default_type  application/octet-stream;
 
       server_tokens off;
-
-      client_body_buffer_size 1k;
-      client_header_buffer_size 1k;
-      client_max_body_size 1k;
-      large_client_header_buffers 2 1k;
-
-      client_body_timeout 10;
-      client_header_timeout 10;
-      keepalive_timeout 5 5;
-      send_timeout 10;
 
       log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
                         '\$status \$body_bytes_sent "\$http_referer" '
@@ -153,16 +182,8 @@ function nginx_conf_default () {
 
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
-      #tcp_nopush     on;
+      tcp_nopush     on;
 
-      gzip on;
-      gzip_disable "msie6";
-      gzip_vary on;
-      gzip_proxied any;
-      gzip_comp_level 9;
-      gzip_buffers 16 8k;
-      gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-      include   /etc/nginx/conf.d/*.conf;
       include   /etc/nginx/sites-enabled/*.conf;
   }
 EOF
@@ -202,6 +223,10 @@ EOF
   }
 EOF
   has_sudo
+  sudo cp -v ${TMP_PATH_NGINX}/client.conf.newbie /etc/nginx/conf.d/client.conf
+  sudo cp -v ${TMP_PATH_NGINX}/gzip.conf.newbie /etc/nginx/conf.d/gzip.conf
+  sudo cp -v ${TMP_PATH_NGINX}/proxy.conf.newbie /etc/nginx/conf.d/proxy.conf
+  sudo cp -v ${TMP_PATH_NGINX}/timeout.conf.newbie /etc/nginx/conf.d/timeout.conf
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
   sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
   cd /etc/nginx/sites-enabled
@@ -327,30 +352,56 @@ EOF
   sudo systemctl enable nginx.service
 }
 
-function install_modsecurity () {
+function install_zlib () {
+  cd ${TMP_PATH_NGINX}/${ZLIB_VERSION}
+  ./configure
+  make
+  has_sudo
+  sudo make install
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function install_libressl () {
+  cd ${TMP_PATH_NGINX}/${LIBRESSL_VERSION}
+  ./configure
+  make
+  has_sudo
+  sudo make install
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function install_pcre () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
   make
   has_sudo
   sudo make install
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function install_modsecurity () {
+
   cd ${TMP_PATH_NGINX}/${FOLDER_MODSECURITY}
   git submodule init
   git submodule update
   ./build.sh
   ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
-    --prefix=/opt/modsecurity \
+    #--prefix=/opt/modsecurity \
     --with-libmodsecurity
   make
   has_sudo
   sudo make install
 
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function module_modsecurity_nginx (){
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
   make modules
-  sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
+  sudo cp -vr objs/ngx_http_modsecurity_module.so /etc/nginx/modules/.
 
   cd $NEWBIE_INSTALLER_PATH
-
   configure_modsecurity
 }
 
@@ -456,6 +507,8 @@ function run_service_nginx () {
 }
 
 function execute_nginx_compile () {
+  path_nginx
+  sleep 1
   download_libs
   sleep 1
   download_nginx
@@ -472,9 +525,10 @@ function execute_nginx_compile () {
   sleep 2
   make_install_nginx
   sleep 2
+  create_service_nginx
   install_modsecurity
   sleep 2
-  create_service_nginx
+  module_modsecurity_nginx
   sleep 1
   run_service_nginx
 }
@@ -486,12 +540,13 @@ function nginx_compile_menu () {
   local option_3="Unpackage libs"
   local option_4="Unpackage Nginx"
   local option_5="Install dependencies"
-  local option_6="Configure and compile ModSecurity 3"
-  local option_7="Configure nginx"
-  local option_8="Make nginx"
-  local option_9="Make install"
-  local option_10="Create service"
-  local option_11="Start service"
+  local option_6="Configure nginx"
+  local option_7="Make nginx"
+  local option_8="Make install nginx"
+  local option_9="Create service"
+  local option_10="Configure and compile ModSecurity 3"
+  local option_11="ModSecurity - Nginx"
+  local option_12="Start service"
   local option_all="All"
   trap '' 2  # ignore control + c
   while true
@@ -517,22 +572,24 @@ function nginx_compile_menu () {
     echo "Enter 9) ${option_9}"
     echo "Enter 10) ${option_10}"
     echo "Enter 11) ${option_11}"
+    echo "Enter 12) ${option_12}"
     echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
     read answer
     case "$answer" in
-     1) download_libs && green_text "Finished ${option_1}" ;;
-     2) download_nginx && green_text "Finished ${option_2}" ;;
+     1) path_nginx && download_libs && green_text "Finished ${option_1}" ;;
+     2) path_nginx && download_nginx && green_text "Finished ${option_2}" ;;
      3) unpackage_libs_nginx && green_text "Finished ${option_3}" ;;
      4) unpackage_nginx && green_text "Finished ${option_4}" ;;
      5) install_dependencies_nginx && green_text "Finished ${option_5}" ;;
-     6) install_modsecurity && green_text "Finished ${option_6}" ;;
-     7) configure_nginx && green_text "Finished ${option_7}" ;;
-     8) make_nginx && green_text "Finished ${option_8}" ;;
-     9) make_install_nginx && green_text "Finished ${option_9}" ;;
-     10) create_service_nginx && green_text "Finished ${option_10}" ;;
-     11) run_service_nginx && green_text "Finished ${option_11}" ;;
+     6) configure_nginx && green_text "Finished ${option_6}" ;;
+     7) make_nginx && green_text "Finished ${option_7}" ;;
+     8) make_install_nginx && green_text "Finished ${option_8}" ;;
+     9) create_service_nginx && green_text "Finished ${option_9}" ;;
+     10) install_modsecurity && green_text "Finished ${option_10}" ;;
+     11) module_modsecurity_nginx && green_text "Finished ${option_11}" ;;
+     12) run_service_nginx && green_text "Finished ${option_12}" ;;
      a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
