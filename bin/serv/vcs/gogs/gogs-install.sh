@@ -27,7 +27,7 @@ TMP_PATH_GOGS="/opt/gogs-newbie-installer"
 GOGS_PORT=3000
 NAME_REPOSITORY="Newbie Installer Repository"
 
-GOGS_VERSION="0.11.79"
+GOGS_VERSION="0.11.91"
 GOGS_BIN="gogs_${GOGS_VERSION}_linux_amd64.tar.gz"
 
 function path_gogs () {

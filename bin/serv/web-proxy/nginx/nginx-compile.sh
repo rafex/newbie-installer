@@ -30,14 +30,15 @@ TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-3.0.0"
+LIBRESSL_VERSION="libressl-3.0.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
-PCRE_VERSION="pcre-8.43"
+PCRE_VERSION="pcre-8.44"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.4"
+NGINX_VERSION="1.17.8"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
+OWASP_MODSECURITY_CRS_BRANCH="v3.3/dev"
 
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
@@ -64,7 +65,7 @@ function download_libs () {
   cd ${TMP_PATH_NGINX}
   git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
   git clone ${URL_GIT_MODSECURITY_NGINX}
-  git clone ${URL_OWASP_MODSECURITY_CRS}
+  git clone -b ${OWASP_MODSECURITY_CRS_BRANCH} ${URL_OWASP_MODSECURITY_CRS}
   cd $NEWBIE_INSTALLER_PATH
 
 }
@@ -140,11 +141,20 @@ EOF
   gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 EOF
 
+cat > ${TMP_PATH_NGINX}/security.conf.newbie << EOF
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
+add_header X-XSS-Protection "1; mode=block" always;
+
+modsecurity on;
+modsecurity_rules_file /etc/nginx/modsec/main.conf;
+EOF
+
   cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
   proxy_redirect          off;
-  proxy_set_header        Host            $host;
-  proxy_set_header        X-Real-IP       $remote_addr;
-  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header        Host            \$host;
+  proxy_set_header        X-Real-IP       \$remote_addr;
+  proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
   proxy_connect_timeout   90;
   proxy_send_timeout      90;
   proxy_read_timeout      90;
@@ -194,10 +204,7 @@ EOF
       server_name  localhost;
       server_tokens off;
 
-      modsecurity on;
-      modsecurity_rules_file /etc/nginx/modsec/main.conf;
-
-      charset koi8-r;
+      charset UTF-8;
       access_log  /var/log/nginx/host.access.log  main;
 
       location / {
@@ -205,7 +212,7 @@ EOF
           index  index.html index.htm;
       }
 
-      #error_page  404              /404.html;
+      error_page  404              /404.html;
 
       # redirect server error pages to the static page /50x.html
       #
@@ -225,6 +232,7 @@ EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/client.conf.newbie /etc/nginx/conf.d/client.conf
   sudo cp -v ${TMP_PATH_NGINX}/gzip.conf.newbie /etc/nginx/conf.d/gzip.conf
+  sudo cp -v ${TMP_PATH_NGINX}/security.conf.newbie /etc/nginx/conf.d/security.conf
   sudo cp -v ${TMP_PATH_NGINX}/proxy.conf.newbie /etc/nginx/conf.d/proxy.conf
   sudo cp -v ${TMP_PATH_NGINX}/timeout.conf.newbie /etc/nginx/conf.d/timeout.conf
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
@@ -337,10 +345,16 @@ Wants=network-online.target
 [Service]
 Type=forking
 PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/bin/rm -f /run/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP \$MAINPID
 ExecStop=/bin/kill -s TERM \$MAINPID
+
+KillSignal=SIGQUIT
+TimeoutStopSec=5
+KillMode=process
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
