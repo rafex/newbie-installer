@@ -140,6 +140,15 @@ EOF
   gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 EOF
 
+cat > ${TMP_PATH_NGINX}/security.conf.newbie << EOF
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
+add_header X-XSS-Protection "1; mode=block" always;
+
+modsecurity on;
+modsecurity_rules_file /etc/nginx/modsec/main.conf;
+EOF
+
   cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
   proxy_redirect          off;
   proxy_set_header        Host            \$host;
@@ -193,10 +202,7 @@ EOF
       listen       localhost:80;
       server_name  localhost;
       server_tokens off;
-
-      modsecurity on;
-      modsecurity_rules_file /etc/nginx/modsec/main.conf;
-
+      
       charset UTF-8;
       access_log  /var/log/nginx/host.access.log  main;
 
@@ -205,7 +211,7 @@ EOF
           index  index.html index.htm;
       }
 
-      #error_page  404              /404.html;
+      error_page  404              /404.html;
 
       # redirect server error pages to the static page /50x.html
       #
@@ -225,6 +231,7 @@ EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/client.conf.newbie /etc/nginx/conf.d/client.conf
   sudo cp -v ${TMP_PATH_NGINX}/gzip.conf.newbie /etc/nginx/conf.d/gzip.conf
+  sudo cp -v ${TMP_PATH_NGINX}/security.conf.newbie /etc/nginx/conf.d/security.conf
   sudo cp -v ${TMP_PATH_NGINX}/proxy.conf.newbie /etc/nginx/conf.d/proxy.conf
   sudo cp -v ${TMP_PATH_NGINX}/timeout.conf.newbie /etc/nginx/conf.d/timeout.conf
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
