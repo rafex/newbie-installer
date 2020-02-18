@@ -30,14 +30,15 @@ TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-3.0.0"
+LIBRESSL_VERSION="libressl-3.0.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
-PCRE_VERSION="pcre-8.43"
+PCRE_VERSION="pcre-8.44"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.4"
+NGINX_VERSION="1.17.8"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
+OWASP_MODSECURITY_CRS_BRANCH="v3.3/dev"
 
 URL_ZLIB="https://www.zlib.net/"
 URL_PCRE="https://ftp.pcre.org/pub/pcre/"
@@ -64,7 +65,7 @@ function download_libs () {
   cd ${TMP_PATH_NGINX}
   git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
   git clone ${URL_GIT_MODSECURITY_NGINX}
-  git clone ${URL_OWASP_MODSECURITY_CRS}
+  git clone -b ${OWASP_MODSECURITY_CRS_BRANCH} ${URL_OWASP_MODSECURITY_CRS}
   cd $NEWBIE_INSTALLER_PATH
 
 }
@@ -202,7 +203,7 @@ EOF
       listen       localhost:80;
       server_name  localhost;
       server_tokens off;
-      
+
       charset UTF-8;
       access_log  /var/log/nginx/host.access.log  main;
 
