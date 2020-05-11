@@ -21,6 +21,7 @@
 DISTRO_DEBIAN="debian"
 DISTRO_CENTOS="centos"
 DISTRO_FEDORA="fedora"
+DISTRO_RASPBIAN="raspbian"
 DISTRO_RHEL="Red Hat Enterprise Linux Server"
 RULZZ="rulzz!!"
 
