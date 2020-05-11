@@ -115,6 +115,7 @@ function install_dependencies_nginx () {
   local distro=$(what_distribution_are_you)
   case $distro in
     debian) install_dependencies_nginx_for_debian ;;
+    raspbian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
     fedora) install_dependencies_nginx_for_fedora;;
     *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
