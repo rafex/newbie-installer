@@ -118,7 +118,7 @@ function install_dependencies_nginx () {
     raspbian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
     fedora) install_dependencies_nginx_for_fedora;;
-    *) red_text "We have not detected your distribution, we're sorry!!! U.U";;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
   esac
 }
 

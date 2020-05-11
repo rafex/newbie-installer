@@ -29,6 +29,8 @@ function what_distribution_are_you () {
     local distro=$(awk -F= '/^NAME/{print $2}' /etc/*release* | tr "[:upper:]" "[:lower:]")
     if [[ $distro == *${DISTRO_DEBIAN}* ]]; then
         echo $DISTRO_DEBIAN
+    elif [[ $distro == *${DISTRO_RASPBIAN}* ]]; then
+        echo $DISTRO_RASPBIAN
     elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
         echo $DISTRO_CENTOS
     elif [[ $distro == *${DISTRO_FEDORA}* ]]; then
