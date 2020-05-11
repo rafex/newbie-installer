@@ -23,7 +23,7 @@
 
 NAME_OF_THE_MODULE="Nginx compile"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-#INSTALLATION_PATH_NGINX="/opt/nginx"
+INSTALLATION_PATH_NGINX="/etc/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
 TMP_PATH_NGINX="/opt/nginx-newbie-installer"
@@ -34,7 +34,7 @@ LIBRESSL_VERSION="libressl-3.0.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.44"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.17.9"
+NGINX_VERSION="1.18.0"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
@@ -438,7 +438,7 @@ EOF
 
 function configure_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  ./configure --prefix=/etc/nginx \
+  ./configure --prefix=$INSTALLATION_PATH_NGINX \
             --sbin-path=/usr/sbin/nginx \
             --modules-path=/usr/lib64/nginx/modules \
             --conf-path=/etc/nginx/nginx.conf \
