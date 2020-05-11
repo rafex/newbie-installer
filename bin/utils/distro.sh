@@ -26,35 +26,37 @@ DISTRO_RHEL="Red Hat Enterprise Linux Server"
 RULZZ="rulzz!!"
 
 function what_distribution_are_you () {
-  local distro=$(awk -F= '/^NAME/{print $2}' /etc/*release* | tr "[:upper:]" "[:lower:]")
-  if [[ $distro == *${DISTRO_DEBIAN}* ]]; then
-    echo $DISTRO_DEBIAN
-  elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
-    echo $DISTRO_CENTOS
-  elif [[ $distro == *${DISTRO_FEDORA}* ]]; then
-    echo $DISTRO_FEDORA
-  fi
+    local distro=$(awk -F= '/^NAME/{print $2}' /etc/*release* | tr "[:upper:]" "[:lower:]")
+    if [[ $distro == *${DISTRO_DEBIAN}* ]]; then
+        echo $DISTRO_DEBIAN
+    elif [[ $distro == *${DISTRO_CENTOS}* ]]; then
+        echo $DISTRO_CENTOS
+    elif [[ $distro == *${DISTRO_FEDORA}* ]]; then
+        echo $DISTRO_FEDORA
+    fi
 }
 
 function what_distribution_are_you_v2 () {
-  local what_name=$(uname | tr "[:upper:]" "[:lower:]")
-  if [ "$UNAME" == "linux" ]; then
-      if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
-          export WHAT_DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'// | tr "[:upper:]" "[:lower:]")
-      else
-          export WHAT_DISTRO=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1 | tr "[:upper:]" "[:lower:]")
-      fi
-  fi
-  [ "$WHAT_DISTRO" == "" ] && export WHAT_DISTRO=$what_name
+    local what_name=$(uname | tr "[:upper:]" "[:lower:]")
+    if [ "$UNAME" == "linux" ]; then
+        if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+            export WHAT_DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'// | tr "[:upper:]" "[:lower:]")
+        else
+            export WHAT_DISTRO=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1 | tr "[:upper:]" "[:lower:]")
+        fi
+    fi
+    [ "$WHAT_DISTRO" == "" ] && export WHAT_DISTRO=$what_name
 }
 
 function what_os_are_you () {
-  if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    echo "GNU/Linux"
-  elif [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "macOS"
-  else
-    red_text "Unknown"
-    exit
-  fi
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        echo "GNU/Linux"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        echo "GNU/Linux"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "macOS"
+    else
+        red_text "Unknown"
+        exit
+    fi
 }
