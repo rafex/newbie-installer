@@ -347,7 +347,8 @@ Wants=network-online.target
 [Service]
 Type=forking
 PIDFile=/var/run/nginx.pid
-ExecStartPre=/usr/bin/rm -f /run/nginx.pid
+#ExecStartPre=/usr/bin/rm -f /run/nginx.pid
+ExecStartPre=rm -f /run/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP \$MAINPID
