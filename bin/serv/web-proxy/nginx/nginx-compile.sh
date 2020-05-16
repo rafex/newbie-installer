@@ -157,6 +157,8 @@ EOF
   proxy_set_header        Host            \$host;
   proxy_set_header        X-Real-IP       \$remote_addr;
   proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto \$scheme;
+  proxy_set_header X-Real-IP \$remote_addr;
   proxy_connect_timeout   90;
   proxy_send_timeout      90;
   proxy_read_timeout      90;
@@ -165,6 +167,16 @@ EOF
   cat > ${TMP_PATH_NGINX}/timeout.conf.newbie << EOF
   send_timeout 60;
   keepalive_timeout 5 5;
+EOF
+  cat > ${TMP_PATH_NGINX}/ssl.conf.newbie << EOF
+  ssl_session_cache shared:le_nginx_SSL:10m;
+  ssl_session_timeout 1440m;
+  ssl_session_tickets off;
+
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+
+  ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
 EOF
   cat > ${TMP_PATH_NGINX}/nginx.conf.newbie << EOF
   user  ${NGINX_USER};
@@ -237,6 +249,7 @@ EOF
   sudo cp -v ${TMP_PATH_NGINX}/security.conf.newbie /etc/nginx/conf.d/security.conf
   sudo cp -v ${TMP_PATH_NGINX}/proxy.conf.newbie /etc/nginx/conf.d/proxy.conf
   sudo cp -v ${TMP_PATH_NGINX}/timeout.conf.newbie /etc/nginx/conf.d/timeout.conf
+  sudo cp -v ${TMP_PATH_NGINX}/ssl.conf.newbie /etc/nginx/conf.d/ssl.conf
   sudo cp -v ${TMP_PATH_NGINX}/nginx.conf.newbie /etc/nginx/nginx.conf
   sudo cp -v ${TMP_PATH_NGINX}/default-site.conf.newbie /etc/nginx/sites-available/default-site.conf
   cd /etc/nginx/sites-enabled
