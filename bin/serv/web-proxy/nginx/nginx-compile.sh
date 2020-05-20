@@ -80,10 +80,6 @@ function unpackage_libs_nginx () {
   tar -xvf ${TMP_PATH_NGINX}/${ZLIB_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${PCRE_SRC} -C ${TMP_PATH_NGINX}
   tar -xvf ${TMP_PATH_NGINX}/${LIBRESSL_SRC} -C ${TMP_PATH_NGINX}
-
-  install_pcre
-  install_libressl
-  install_zlib
 }
 
 function unpackage_nginx () {
@@ -452,6 +448,9 @@ EOF
 
 
 function configure_nginx () {
+  install_pcre
+  install_libressl
+  install_zlib
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=$INSTALLATION_PATH_NGINX \
             --sbin-path=/usr/sbin/nginx \
