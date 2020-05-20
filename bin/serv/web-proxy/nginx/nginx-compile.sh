@@ -320,8 +320,10 @@ function final_adjustments () {
   has_sudo
   sudo ln -s /usr/lib64/nginx/modules /etc/nginx/modules
   sudo mkdir -vp /usr/share/nginx
+  sudo mkdir -vp /var/www/html
   sudo mv -v /etc/nginx/html /usr/share/nginx/html
   sudo chown -R $NGINX_USER:$NGINX_GROUP /usr/share/nginx
+  sudo chown -R $NGINX_USER:$NGINX_GROUP /var/www/html
   sudo rm -rfv /etc/nginx/*.default
   sudo mkdir -vp /etc/nginx/conf.d
   sudo mkdir -vp /etc/nginx/sites-available
