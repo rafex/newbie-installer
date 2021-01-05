@@ -31,7 +31,7 @@
 . utils/exit.sh
 . serv/serv.sh
 . sdk/sdk.sh
-. jitsi/jitsi.sh
+#. jitsi/jitsi.sh
 
 if is_root; then
     red_text "Error: need to call this script as a normal user, not as root!"
