@@ -21,8 +21,8 @@
 # . ../../utils/color.sh
 # . ../../utils/is-root.sh
 
-NAME_OF_THE_MODULE="Nginx compile"
-INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
+NAME_OF_THE_MODULE_NGINX="Nginx compile"
+INITIAL_TEXT_NGINX="Load module ${NAME_OF_THE_MODULE_NGINX}"
 INSTALLATION_PATH_NGINX="/etc/nginx"
 NGINX_USER="nginx"
 NGINX_GROUP="nginx"
@@ -588,7 +588,7 @@ function nginx_compile_menu () {
     green_text "================================"
     green_text "================================"
     echo "-----------          -----------"
-    red_text "${NAME_OF_THE_MODULE}"
+    red_text "${NAME_OF_THE_MODULE_NGINX}"
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"

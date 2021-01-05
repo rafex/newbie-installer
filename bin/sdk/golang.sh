@@ -18,8 +18,8 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-NAME_OF_THE_MODULE="Golang install"
-INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
+NAME_OF_THE_MODULE_GOLANG="Golang install"
+INITIAL_TEXT_GOLANG="Load module ${NAME_OF_THE_MODULE_GOLANG}"
 INSTALLATION_PATH_GOLANG="/usr/local/go"
 GOLANG_VERSION="1.12.9"
 GOLANG_BINARY="go${GOLANG_VERSION}.linux-amd64.tar.gz"
@@ -73,7 +73,7 @@ function golang_menu () {
    green_text "================================"
    green_text "================================"
    echo "-----------          -----------"
-   red_text "${NAME_OF_THE_MODULE}"
+   red_text "${NAME_OF_THE_MODULE_GOLANG}"
    echo "-----------          -----------"
    green_text "================================"
    green_text "================================"
