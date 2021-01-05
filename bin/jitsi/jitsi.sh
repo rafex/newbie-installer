@@ -23,7 +23,7 @@
 
 NAME_OF_THE_MODULE="Jitsi"
 INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
-TMP_PATH_NGINX="/opt/jitsi-newbie-installer"
+TMP_PATH_JITSI="/opt/jitsi-newbie-installer"
 
 function add_dependencies () {
   has_sudo
