@@ -154,7 +154,7 @@ function create_config_gogs () {
   PROVIDER = file
   ; The configuration for respective provider:
   ; - memory: does not need any config yet
-  ; - file: session file path, e.g. `data/sessions`
+  ; - file: session file path, e.g. data/sessions
   ; - redis: network=tcp,addr=:6379,password=macaron,db=0,pool_size=100,idle_timeout=180
   PROVIDER_CONFIG = data/sessions
   ; The cookie name to store the session identifier.
@@ -206,18 +206,17 @@ function create_config_gogs () {
   REVERSE_PROXY_AUTHENTICATION_HEADER = X-WEBAUTH-USER
 
 [attachment]
-  ; Whether issue and pull request attachments are enabled. Defaults to `true`
+  ; Whether issue and pull request attachments are enabled. Defaults to true
   ENABLED = true
-  ; Comma-separated list of allowed file extensions (`.zip`), mime types (`text/plain`) or wildcard type (`image/*`, `audio/*`, `video/*`). Empty value or `*/*` allows all types.
+  ; Comma-separated list of allowed file extensions (.zip), mime types (text/plain) or wildcard type (image/*, audio/*, video/*). Empty value or */* allows all types.
   ALLOWED_TYPES = .docx,.gif,.gz,.jpeg,.jpg,.log,.pdf,.png,.pptx,.txt,.xlsx,.zip
   ; Max size of each file. Defaults to 4MB
   MAX_SIZE = 4
   ; Max number of files per upload. Defaults to 5
   MAX_FILES = 5
-  ; Storage type for attachments, `local` for local disk or `minio` for s3 compatible
-  ; object storage service, default is `local`.
+  ; Storage type for attachments, local for local disk or minio for s3 compatible
+  ; object storage service, default is local.
   STORAGE_TYPE = local
-
 
 EOF
   has_sudo
