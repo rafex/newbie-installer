@@ -21,8 +21,8 @@
 # . ../../utils/color.sh
 # . ../../utils/is-root.sh
 
-NAME_OF_THE_MODULE="Jitsi"
-INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
+NAME_OF_THE_MODULE_JITSI="Jitsi"
+INITIAL_TEXT_JITSI="Load module ${NAME_OF_THE_MODULE_JITSI}"
 TMP_PATH_JITSI="/opt/jitsi-newbie-installer"
 
 function add_dependencies () {
@@ -62,7 +62,7 @@ function jitsi_install_menu () {
    green_text "================================"
    green_text "================================"
    echo "-----------          -----------"
-   red_text "${NAME_OF_THE_MODULE}"
+   red_text "${NAME_OF_THE_MODULE_JITSI}"
    echo "-----------          -----------"
    green_text "================================"
    green_text "================================"

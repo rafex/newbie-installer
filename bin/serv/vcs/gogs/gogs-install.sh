@@ -18,8 +18,8 @@
 # Version: 0.1.0
 # Written by: Raúl González <rafex.dev@gmail.com>
 
-NAME_OF_THE_MODULE="Gogs install"
-INITIAL_TEXT="Load module ${NAME_OF_THE_MODULE}"
+NAME_OF_THE_MODULE_GOGS="Gogs install"
+INITIAL_TEXT_GOGS="Load module ${NAME_OF_THE_MODULE_GOGS}"
 INSTALLATION_PATH_GOGS="/opt/gogs"
 GOGS_USER="gogs"
 GOGS_GROUP="gogs"
@@ -303,7 +303,7 @@ function gogs_install_menu () {
     green_text "================================"
     green_text "================================"
     echo "-----------          -----------"
-    red_text "${NAME_OF_THE_MODULE}"
+    red_text "${NAME_OF_THE_MODULE_GOGS}"
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"
