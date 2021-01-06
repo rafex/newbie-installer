@@ -208,36 +208,35 @@ EOF
   }
 EOF
   cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
-  server {
-      listen       80;
-      listen       localhost:80;
-      server_name  localhost;
-      server_tokens off;
+server {
+  listen       80;
+  listen       localhost:80;
+  server_name  localhost;
+  server_tokens off;
 
-      charset UTF-8;
-      access_log  /var/log/nginx/host.access.log  main;
+  charset UTF-8;
+  access_log  /var/log/nginx/host.access.log  main;
 
-      location / {
-          root   /usr/share/nginx/html;
-          index  index.html index.htm;
-      }
-
-      error_page  404              /404.html;
-
-      # redirect server error pages to the static page /50x.html
-      #
-      error_page   500 502 503 504  /50x.html;
-      location = /50x.html {
-          root   /usr/share/nginx/html;
-      }
-
-      # deny access to .htaccess files, if Apache's document root
-      # concurs with nginx's one
-      #
-      location ~ /\.ht {
-          deny  all;
-      }
+  location / {
+    root   /usr/share/nginx/html;
+    index  index.html index.htm;
   }
+
+  error_page  404              /404.html;
+
+  # redirect server error pages to the static page /50x.html
+  error_page   500 502 503 504  /50x.html;
+  location = /50x.html {
+    root   /usr/share/nginx/html;
+  }
+
+  # deny access to .htaccess files, if Apache's document root
+  # concurs with nginx's one
+  #
+  location ~ /\.ht {
+    deny  all;
+  }
+}
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/client.conf.newbie /etc/nginx/conf.d/client.conf

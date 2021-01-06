@@ -7,7 +7,7 @@ The intention of these scripts is to facilitate the installation of tools that a
 ### Debian / Ubuntu / Mint
 ```Shell
 $ sudo apt-get update
-$ sudo apt-get -y install build-essential git
+$ sudo apt-get -y install build-essential git curl
 ```
 
 ### CentOS / RHEL 7/6/5
