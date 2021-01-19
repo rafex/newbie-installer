@@ -93,6 +93,33 @@ function install_dependencies_nginx_for_debian () {
   sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev git libtool
 }
 
+function install_dependencies_nginx_for_alpine () {
+  apk add --update gcc \
+    libc-dev \
+    linux-headers \
+    zlib-dev \
+    libxslt-dev \
+    libatomic_ops-dev \
+    openrc \
+    autoconf \
+    automake \
+    git \
+    libressl-dev \
+    geoip-dev \
+    lmdb-dev \
+    pcre-dev \
+    libtool \
+    libxml2-dev \
+    yajl-dev \
+    pkgconf \
+    wget \
+    zlib-dev \
+    g++ \
+    libcurl \
+    make \
+    curl
+}
+
 function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
@@ -114,6 +141,7 @@ function install_dependencies_nginx () {
     raspbian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
     fedora) install_dependencies_nginx_for_fedora;;
+    alpine) install_dependencies_nginx_for_alpine ;;
     *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
   esac
 }
