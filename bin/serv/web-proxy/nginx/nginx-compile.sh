@@ -415,27 +415,27 @@ EOF
 function install_zlib () {
   cd ${TMP_PATH_NGINX}/${ZLIB_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_libressl () {
   cd ${TMP_PATH_NGINX}/${LIBRESSL_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_pcre () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
@@ -448,9 +448,9 @@ function install_modsecurity () {
   ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
     #--prefix=/opt/modsecurity \
     --with-libmodsecurity
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
 
   cd $NEWBIE_INSTALLER_PATH
 }
@@ -458,7 +458,7 @@ function install_modsecurity () {
 function module_modsecurity_nginx (){
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
-  make modules
+  make modules -j$(nproc)
   sudo cp -vr objs/ngx_http_modsecurity_module.so /etc/nginx/modules/.
 
   cd $NEWBIE_INSTALLER_PATH
@@ -626,14 +626,14 @@ function configure_nginx_without_google_perftools () {
 
 function make_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  make
+  make -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function make_install_nginx () {
   has_sudo
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 
   create_user_nginx
