@@ -7,17 +7,23 @@ The intention of these scripts is to facilitate the installation of tools that a
 ### Debian / Ubuntu / Mint
 ```Shell
 $ sudo apt-get update
-$ sudo apt-get -y install build-essential git curl
+$ sudo apt-get -y install build-essential git curl wget
+```
+
+### Alpine / 3.13.0
+```Shell
+$ sudo apk update
+$ sudo apk add sudo git curl wget
 ```
 
 ### CentOS / RHEL 7/6/5
 ```Shell
 $ sudo yum update
-$ sudo yum groupinstall "Development Tools" git
+$ sudo yum groupinstall "Development Tools" git wget
 ```
 
 ### Fedora 28/29/30
 ```Shell
 $ sudo dnf update
-$ sudo dnf groupinstall "C Development Tools and Libraries" git
+$ sudo dnf groupinstall "C Development Tools and Libraries" git wget
 ```

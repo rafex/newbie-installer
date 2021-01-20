@@ -21,6 +21,7 @@
 DISTRO_DEBIAN="debian"
 DISTRO_CENTOS="centos"
 DISTRO_FEDORA="fedora"
+DISTRO_ALPINE="alpine"
 DISTRO_RASPBIAN="raspbian"
 DISTRO_RHEL="Red Hat Enterprise Linux Server"
 RULZZ="rulzz!!"
@@ -35,6 +36,8 @@ function what_distribution_are_you () {
         echo $DISTRO_CENTOS
     elif [[ $distro == *${DISTRO_FEDORA}* ]]; then
         echo $DISTRO_FEDORA
+    elif [[ $distro == *${DISTRO_ALPINE}* ]]; then
+        echo $DISTRO_ALPINE
     fi
 }
 
