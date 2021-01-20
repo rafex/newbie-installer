@@ -58,6 +58,8 @@ function what_os_are_you () {
         echo "GNU/Linux"
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "GNU/Linux"
+    elif [[ "$OSTYPE" == "linux-musl"* ]]; then
+        echo "Alpine Linux"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         echo "macOS"
     else
