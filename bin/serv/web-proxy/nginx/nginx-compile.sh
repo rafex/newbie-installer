@@ -94,7 +94,8 @@ function install_dependencies_nginx_for_debian () {
 }
 
 function install_dependencies_nginx_for_alpine () {
-  apk add --update gcc \
+  has_sudo
+  sudo apk add --update gcc \
     libc-dev \
     linux-headers \
     zlib-dev \
