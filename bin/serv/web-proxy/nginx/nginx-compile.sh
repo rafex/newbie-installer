@@ -118,7 +118,11 @@ function install_dependencies_nginx_for_alpine () {
     g++ \
     libcurl \
     make \
-    curl
+    curl \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    gd-dev
 }
 
 function install_dependencies_nginx_for_centos () {
@@ -478,6 +482,18 @@ EOF
 
 
 function configure_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) configure_nginx_with_google_perftools ;;
+    raspbian) configure_nginx_with_google_perftools ;;
+    centos) configure_nginx_with_google_perftools ;;
+    fedora) configure_nginx_with_google_perftools;;
+    alpine) configure_nginx_without_google_perftools ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
+}
+
+function configure_nginx_with_google_perftools () {
   install_pcre
   install_libressl
   install_zlib
@@ -504,6 +520,71 @@ function configure_nginx () {
             --with-http_addition_module \
             --with-http_xslt_module=dynamic \
             --with-google_perftools_module \
+            --with-http_image_filter_module=dynamic \
+            --with-http_geoip_module=dynamic \
+            --with-http_sub_module \
+            --with-http_dav_module \
+            --with-http_flv_module \
+            --with-http_mp4_module \
+            --with-http_gunzip_module \
+            --with-http_gzip_static_module \
+            --with-http_auth_request_module \
+            --with-http_random_index_module \
+            --with-http_secure_link_module \
+            --with-http_degradation_module \
+            --with-http_slice_module \
+            --with-http_stub_status_module \
+            --without-http_autoindex_module \
+            --http-client-body-temp-path=/var/cache/nginx/client_temp \
+            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+            --with-mail=dynamic \
+            --with-mail_ssl_module \
+            --with-stream=dynamic \
+            --with-stream_ssl_module \
+            --with-stream_realip_module \
+            --with-stream_geoip_module=dynamic \
+            --with-stream_ssl_preread_module \
+            --with-compat \
+            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
+            --with-pcre-jit \
+            --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
+            --with-openssl-opt=no-nextprotoneg \
+            --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
+            --with-zlib-asm=CPU \
+            --with-libatomic \
+            --with-debug
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function configure_nginx_without_google_perftools () {
+  install_pcre
+  install_libressl
+  install_zlib
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
+  ./configure --prefix=$INSTALLATION_PATH_NGINX \
+            --sbin-path=/usr/sbin/nginx \
+            --modules-path=/usr/lib64/nginx/modules \
+            --conf-path=/etc/nginx/nginx.conf \
+            --error-log-path=/var/log/nginx/error.log \
+            --http-log-path=/var/log/nginx/access.log \
+            --pid-path=/var/run/nginx.pid \
+            --lock-path=/var/run/nginx.lock \
+            --user=$NGINX_USER \
+            --group=$NGINX_GROUP \
+            --build=Debian \
+            --builddir=nginx-${NGINX_VERSION} \
+            --with-select_module \
+            --with-poll_module \
+            --with-threads \
+            --with-file-aio \
+            --with-http_ssl_module \
+            --with-http_v2_module \
+            --with-http_realip_module \
+            --with-http_addition_module \
+            --with-http_xslt_module=dynamic \
             --with-http_image_filter_module=dynamic \
             --with-http_geoip_module=dynamic \
             --with-http_sub_module \
