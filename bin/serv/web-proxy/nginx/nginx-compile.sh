@@ -98,22 +98,18 @@ function install_dependencies_nginx_for_alpine () {
   sudo apk add --update gcc \
     libc-dev \
     linux-headers \
-    zlib-dev \
     libxslt-dev \
     libatomic_ops-dev \
     openrc \
     autoconf \
     automake \
     git \
-    libressl-dev \
     geoip-dev \
     lmdb-dev \
-    pcre-dev \
     libtool \
     libxml2-dev \
     yajl-dev \
     pkgconf \
-    wget \
     zlib-dev \
     g++ \
     libcurl \
@@ -123,6 +119,9 @@ function install_dependencies_nginx_for_alpine () {
     libjpeg-turbo-dev \
     libpng-dev \
     gd-dev
+    #zlib-dev \
+    #libressl-dev \
+    #pcre-dev
 }
 
 function install_dependencies_nginx_for_centos () {
@@ -379,7 +378,42 @@ function create_folders_nginx () {
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
 
-function create_service_nginx () {
+
+
+function create_service_nginx_openrc () {
+  cat > ${TMP_PATH_NGINX}/nginx.service-rc.newbie << EOF
+[Unit]
+Description=Nginx ${NGINX_VERSION}
+Documentation=https://nginx.org/en/docs/
+After=network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/nginx.pid
+#ExecStartPre=/usr/bin/rm -f /run/nginx.pid
+ExecStartPre=rm -f /run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
+ExecReload=/bin/kill -s HUP \$MAINPID
+ExecStop=/bin/kill -s TERM \$MAINPID
+
+KillSignal=SIGQUIT
+TimeoutStopSec=5
+KillMode=process
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  has_sudo
+  sudo cp -v ${TMP_PATH_NGINX}/nginx.service-rc.newbie /etc/init.d/nginx
+  sudo chmod 755 /etc/systemd/system/nginx.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable nginx.service
+}
+
+function create_service_nginx_systemd () {
   cat > ${TMP_PATH_NGINX}/nginx.service.newbie << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
@@ -410,6 +444,18 @@ EOF
   sudo chmod 755 /etc/systemd/system/nginx.service
   sudo systemctl daemon-reload
   sudo systemctl enable nginx.service
+}
+
+function create_service_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) create_service_nginx_systemd ;;
+    raspbian) create_service_nginx_systemd ;;
+    centos) create_service_nginx_systemd ;;
+    fedora) create_service_nginx_systemd;;
+    alpine) create_service_nginx_openrc ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
 }
 
 function install_zlib () {
@@ -499,63 +545,63 @@ function configure_nginx_with_google_perftools () {
   install_zlib
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=$INSTALLATION_PATH_NGINX \
-            --sbin-path=/usr/sbin/nginx \
-            --modules-path=/usr/lib64/nginx/modules \
-            --conf-path=/etc/nginx/nginx.conf \
-            --error-log-path=/var/log/nginx/error.log \
-            --http-log-path=/var/log/nginx/access.log \
-            --pid-path=/var/run/nginx.pid \
-            --lock-path=/var/run/nginx.lock \
-            --user=$NGINX_USER \
-            --group=$NGINX_GROUP \
-            --build=Debian \
-            --builddir=nginx-${NGINX_VERSION} \
-            --with-select_module \
-            --with-poll_module \
-            --with-threads \
-            --with-file-aio \
-            --with-http_ssl_module \
-            --with-http_v2_module \
-            --with-http_realip_module \
-            --with-http_addition_module \
-            --with-http_xslt_module=dynamic \
-            --with-google_perftools_module \
-            --with-http_image_filter_module=dynamic \
-            --with-http_geoip_module=dynamic \
-            --with-http_sub_module \
-            --with-http_dav_module \
-            --with-http_flv_module \
-            --with-http_mp4_module \
-            --with-http_gunzip_module \
-            --with-http_gzip_static_module \
-            --with-http_auth_request_module \
-            --with-http_random_index_module \
-            --with-http_secure_link_module \
-            --with-http_degradation_module \
-            --with-http_slice_module \
-            --with-http_stub_status_module \
-            --without-http_autoindex_module \
-            --http-client-body-temp-path=/var/cache/nginx/client_temp \
-            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-            --with-mail=dynamic \
-            --with-mail_ssl_module \
-            --with-stream=dynamic \
-            --with-stream_ssl_module \
-            --with-stream_realip_module \
-            --with-stream_geoip_module=dynamic \
-            --with-stream_ssl_preread_module \
-            --with-compat \
-            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
-            --with-pcre-jit \
-            --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
-            --with-openssl-opt=no-nextprotoneg \
-            --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
-            --with-zlib-asm=CPU \
-            --with-libatomic \
-            --with-debug
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib64/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx.pid \
+    --lock-path=/var/run/nginx.lock \
+    --user=$NGINX_USER \
+    --group=$NGINX_GROUP \
+    --build=Debian \
+    --builddir=nginx-${NGINX_VERSION} \
+    --with-select_module \
+    --with-poll_module \
+    --with-threads \
+    --with-file-aio \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_xslt_module=dynamic \
+    --with-google_perftools_module \
+    --with-http_image_filter_module=dynamic \
+    --with-http_geoip_module=dynamic \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_auth_request_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
+    --with-http_slice_module \
+    --with-http_stub_status_module \
+    --without-http_autoindex_module \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --with-mail=dynamic \
+    --with-mail_ssl_module \
+    --with-stream=dynamic \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-stream_geoip_module=dynamic \
+    --with-stream_ssl_preread_module \
+    --with-compat \
+    --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
+    --with-pcre-jit \
+    --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
+    --with-openssl-opt=no-nextprotoneg \
+    --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
+    --with-zlib-asm=CPU \
+    --with-libatomic \
+    --with-debug
   cd $NEWBIE_INSTALLER_PATH
 }
 
@@ -565,62 +611,62 @@ function configure_nginx_without_google_perftools () {
   install_zlib
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=$INSTALLATION_PATH_NGINX \
-            --sbin-path=/usr/sbin/nginx \
-            --modules-path=/usr/lib64/nginx/modules \
-            --conf-path=/etc/nginx/nginx.conf \
-            --error-log-path=/var/log/nginx/error.log \
-            --http-log-path=/var/log/nginx/access.log \
-            --pid-path=/var/run/nginx.pid \
-            --lock-path=/var/run/nginx.lock \
-            --user=$NGINX_USER \
-            --group=$NGINX_GROUP \
-            --build=Debian \
-            --builddir=nginx-${NGINX_VERSION} \
-            --with-select_module \
-            --with-poll_module \
-            --with-threads \
-            --with-file-aio \
-            --with-http_ssl_module \
-            --with-http_v2_module \
-            --with-http_realip_module \
-            --with-http_addition_module \
-            --with-http_xslt_module=dynamic \
-            --with-http_image_filter_module=dynamic \
-            --with-http_geoip_module=dynamic \
-            --with-http_sub_module \
-            --with-http_dav_module \
-            --with-http_flv_module \
-            --with-http_mp4_module \
-            --with-http_gunzip_module \
-            --with-http_gzip_static_module \
-            --with-http_auth_request_module \
-            --with-http_random_index_module \
-            --with-http_secure_link_module \
-            --with-http_degradation_module \
-            --with-http_slice_module \
-            --with-http_stub_status_module \
-            --without-http_autoindex_module \
-            --http-client-body-temp-path=/var/cache/nginx/client_temp \
-            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-            --with-mail=dynamic \
-            --with-mail_ssl_module \
-            --with-stream=dynamic \
-            --with-stream_ssl_module \
-            --with-stream_realip_module \
-            --with-stream_geoip_module=dynamic \
-            --with-stream_ssl_preread_module \
-            --with-compat \
-            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
-            --with-pcre-jit \
-            --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
-            --with-openssl-opt=no-nextprotoneg \
-            --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
-            --with-zlib-asm=CPU \
-            --with-libatomic \
-            --with-debug
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib64/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx.pid \
+    --lock-path=/var/run/nginx.lock \
+    --user=$NGINX_USER \
+    --group=$NGINX_GROUP \
+    --build=Debian \
+    --builddir=nginx-${NGINX_VERSION} \
+    --with-select_module \
+    --with-poll_module \
+    --with-threads \
+    --with-file-aio \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_xslt_module=dynamic \
+    --with-http_image_filter_module=dynamic \
+    --with-http_geoip_module=dynamic \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_auth_request_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
+    --with-http_slice_module \
+    --with-http_stub_status_module \
+    --without-http_autoindex_module \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --with-mail=dynamic \
+    --with-mail_ssl_module \
+    --with-stream=dynamic \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-stream_geoip_module=dynamic \
+    --with-stream_ssl_preread_module \
+    --with-compat \
+    --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
+    --with-pcre-jit \
+    --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
+    --with-openssl-opt=no-nextprotoneg \
+    --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
+    --with-zlib-asm=CPU \
+    --with-libatomic \
+    --with-debug
   cd $NEWBIE_INSTALLER_PATH
 }
 
