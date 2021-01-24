@@ -211,7 +211,7 @@ EOF
   worker_processes  4;
 
   error_log  /var/log/nginx/error.log warn;
-  pid        /var/run/nginx.pid;
+  pid        /var/run/nginx/nginx.pid;
 
   load_module modules/ngx_http_modsecurity_module.so;
 
@@ -382,29 +382,77 @@ function create_folders_nginx () {
 
 function create_service_nginx_openrc () {
   cat > ${TMP_PATH_NGINX}/nginx.service-rc.newbie << EOF
-[Unit]
-Description=Nginx ${NGINX_VERSION}
-Documentation=https://nginx.org/en/docs/
-After=network-online.target remote-fs.target nss-lookup.target
-Wants=network-online.target
+#!/sbin/openrc-run
 
-[Service]
-Type=forking
-PIDFile=/var/run/nginx.pid
-#ExecStartPre=/usr/bin/rm -f /run/nginx.pid
-ExecStartPre=rm -f /run/nginx.pid
-ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
-ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
-ExecReload=/bin/kill -s HUP \$MAINPID
-ExecStop=/bin/kill -s TERM \$MAINPID
+description="Nginx http and reverse proxy server ${NGINX_VERSION}"
+extra_commands="checkconfig"
+extra_started_commands="reload reopen upgrade"
 
-KillSignal=SIGQUIT
-TimeoutStopSec=5
-KillMode=process
-PrivateTmp=true
+cfgfile=\${cfgfile:-/etc/nginx/nginx.conf}
+pidfile=/var/run/nginx/nginx.pid
+command=\${command:-/usr/sbin/nginx}
+command_args="-c \$cfgfile"
+required_files="\$cfgfile"
 
-[Install]
-WantedBy=multi-user.target
+depend() {
+	need net
+	use dns logger netmount
+}
+
+start_pre() {
+	checkpath --directory --owner nginx:nginx \${pidfile%/*}
+	$command \$command_args -t -q
+}
+
+checkconfig() {
+	ebegin "Checking \$RC_SVCNAME configuration"
+	start_pre
+	eend \$?
+}
+
+reload() {
+	ebegin "Reloading \$RC_SVCNAME configuration"
+	start_pre && start-stop-daemon --signal HUP --pidfile \$pidfile
+	eend \$?
+}
+
+reopen() {
+	ebegin "Reopening \$RC_SVCNAME log files"
+	start-stop-daemon --signal USR1 --pidfile \$pidfile
+	eend \$?
+}
+
+upgrade() {
+	start_pre || return 1
+
+	ebegin "Upgrading \$RC_SVCNAME binary"
+
+	einfo "Sending USR2 to old binary"
+	start-stop-daemon --signal USR2 --pidfile \$pidfile
+
+	einfo "Sleeping 3 seconds before pid-files checking"
+	sleep 3
+
+	if [ ! -f \$pidfile.oldbin ]; then
+		eerror "File with old pid (\$pidfile.oldbin) not found"
+		return 1
+	fi
+
+	if [ ! -f \$pidfile ]; then
+		eerror "New binary failed to start"
+		return 1
+	fi
+
+	einfo "Sleeping 3 seconds before WINCH"
+	sleep 3 ; start-stop-daemon --signal 28 --pidfile \$pidfile.oldbin
+
+	einfo "Sending QUIT to old binary"
+	start-stop-daemon --signal QUIT --pidfile \$pidfile.oldbin
+
+	einfo "Upgrade completed"
+
+	eend \$? "Upgrade failed"
+}
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/nginx.service-rc.newbie /etc/init.d/nginx
@@ -423,9 +471,9 @@ Wants=network-online.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/nginx.pid
-#ExecStartPre=/usr/bin/rm -f /run/nginx.pid
-ExecStartPre=rm -f /run/nginx.pid
+PIDFile=/var/run/nginx/nginx.pid
+#ExecStartPre=/usr/bin/rm -f /var/run/nginx/nginx.pid
+ExecStartPre=rm -f /var/run/nginx/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP \$MAINPID
@@ -550,8 +598,8 @@ function configure_nginx_with_google_perftools () {
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
     --http-log-path=/var/log/nginx/access.log \
-    --pid-path=/var/run/nginx.pid \
-    --lock-path=/var/run/nginx.lock \
+    --pid-path=/var/run/nginx/nginx.pid \
+    --lock-path=/var/run/nginx/nginx.lock \
     --user=$NGINX_USER \
     --group=$NGINX_GROUP \
     --build=Debian \
@@ -616,8 +664,8 @@ function configure_nginx_without_google_perftools () {
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
     --http-log-path=/var/log/nginx/access.log \
-    --pid-path=/var/run/nginx.pid \
-    --lock-path=/var/run/nginx.lock \
+    --pid-path=/var/run/nginx/nginx.pid \
+    --lock-path=/var/run/nginx/nginx.lock \
     --user=$NGINX_USER \
     --group=$NGINX_GROUP \
     --build=Debian \
