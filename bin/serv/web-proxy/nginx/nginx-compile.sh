@@ -735,9 +735,26 @@ function make_install_nginx () {
   final_adjustments
 }
 
-function run_service_nginx () {
+function run_service_nginx_systemd () {
   has_sudo
   sudo systemctl start nginx
+}
+
+function run_service_nginx_openrc () {
+  has_sudo
+  sudo rc-service nginx start
+}
+
+function run_service_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) run_service_nginx_systemd ;;
+    raspbian) run_service_nginx_systemd ;;
+    centos) run_service_nginx_systemd ;;
+    fedora) run_service_nginx_systemd;;
+    alpine) run_service_nginx_openrc ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
 }
 
 function execute_nginx_compile () {
