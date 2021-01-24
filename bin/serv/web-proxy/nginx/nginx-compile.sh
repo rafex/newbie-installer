@@ -401,7 +401,7 @@ depend() {
 
 start_pre() {
 	checkpath --directory --owner nginx:nginx \${pidfile%/*}
-	$command \$command_args -t -q
+	\$command \$command_args -t -q
 }
 
 checkconfig() {
@@ -456,9 +456,8 @@ upgrade() {
 EOF
   has_sudo
   sudo cp -v ${TMP_PATH_NGINX}/nginx.service-rc.newbie /etc/init.d/nginx
-  sudo chmod 755 /etc/systemd/system/nginx.service
-  sudo systemctl daemon-reload
-  sudo systemctl enable nginx.service
+  sudo chmod 755 /etc/init.d/nginx
+  sudo rc-update add nginx default
 }
 
 function create_service_nginx_systemd () {
