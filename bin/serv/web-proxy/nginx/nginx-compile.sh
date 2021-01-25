@@ -93,6 +93,37 @@ function install_dependencies_nginx_for_debian () {
   sudo apt -y install curl libxml2-dev libxslt1-dev libgd-dev libgeoip-dev libgoogle-perftools-dev libatomic-ops-dev git libtool
 }
 
+function install_dependencies_nginx_for_alpine () {
+  has_sudo
+  sudo apk add --update gcc \
+    libc-dev \
+    linux-headers \
+    libxslt-dev \
+    libatomic_ops-dev \
+    openrc \
+    autoconf \
+    automake \
+    git \
+    geoip-dev \
+    lmdb-dev \
+    libtool \
+    libxml2-dev \
+    yajl-dev \
+    pkgconf \
+    zlib-dev \
+    g++ \
+    libcurl \
+    make \
+    curl \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    gd-dev
+    #zlib-dev \
+    #libressl-dev \
+    #pcre-dev
+}
+
 function install_dependencies_nginx_for_centos () {
   has_sudo
   blue_text "Install dependencies for CentOS"
@@ -114,6 +145,7 @@ function install_dependencies_nginx () {
     raspbian) install_dependencies_nginx_for_debian ;;
     centos) install_dependencies_nginx_for_centos ;;
     fedora) install_dependencies_nginx_for_fedora;;
+    alpine) install_dependencies_nginx_for_alpine ;;
     *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
   esac
 }
@@ -179,7 +211,7 @@ EOF
   worker_processes  4;
 
   error_log  /var/log/nginx/error.log warn;
-  pid        /var/run/nginx.pid;
+  pid        /var/run/nginx/nginx.pid;
 
   load_module modules/ngx_http_modsecurity_module.so;
 
@@ -346,7 +378,89 @@ function create_folders_nginx () {
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
 }
 
-function create_service_nginx () {
+
+
+function create_service_nginx_openrc () {
+  cat > ${TMP_PATH_NGINX}/nginx.service-rc.newbie << EOF
+#!/sbin/openrc-run
+
+description="Nginx http and reverse proxy server ${NGINX_VERSION}"
+extra_commands="checkconfig"
+extra_started_commands="reload reopen upgrade"
+
+cfgfile=\${cfgfile:-/etc/nginx/nginx.conf}
+pidfile=/var/run/nginx/nginx.pid
+command=\${command:-/usr/sbin/nginx}
+command_args="-c \$cfgfile"
+required_files="\$cfgfile"
+
+depend() {
+	need net
+	use dns logger netmount
+}
+
+start_pre() {
+	checkpath --directory --owner nginx:nginx \${pidfile%/*}
+	\$command \$command_args -t -q
+}
+
+checkconfig() {
+	ebegin "Checking \$RC_SVCNAME configuration"
+	start_pre
+	eend \$?
+}
+
+reload() {
+	ebegin "Reloading \$RC_SVCNAME configuration"
+	start_pre && start-stop-daemon --signal HUP --pidfile \$pidfile
+	eend \$?
+}
+
+reopen() {
+	ebegin "Reopening \$RC_SVCNAME log files"
+	start-stop-daemon --signal USR1 --pidfile \$pidfile
+	eend \$?
+}
+
+upgrade() {
+	start_pre || return 1
+
+	ebegin "Upgrading \$RC_SVCNAME binary"
+
+	einfo "Sending USR2 to old binary"
+	start-stop-daemon --signal USR2 --pidfile \$pidfile
+
+	einfo "Sleeping 3 seconds before pid-files checking"
+	sleep 3
+
+	if [ ! -f \$pidfile.oldbin ]; then
+		eerror "File with old pid (\$pidfile.oldbin) not found"
+		return 1
+	fi
+
+	if [ ! -f \$pidfile ]; then
+		eerror "New binary failed to start"
+		return 1
+	fi
+
+	einfo "Sleeping 3 seconds before WINCH"
+	sleep 3 ; start-stop-daemon --signal 28 --pidfile \$pidfile.oldbin
+
+	einfo "Sending QUIT to old binary"
+	start-stop-daemon --signal QUIT --pidfile \$pidfile.oldbin
+
+	einfo "Upgrade completed"
+
+	eend \$? "Upgrade failed"
+}
+EOF
+  has_sudo
+  sudo cp -v ${TMP_PATH_NGINX}/nginx.service-rc.newbie /etc/init.d/nginx
+  sudo chmod 755 /etc/init.d/nginx
+  sudo rc-update add nginx default
+}
+
+function create_service_nginx_systemd () {
   cat > ${TMP_PATH_NGINX}/nginx.service.newbie << EOF
 [Unit]
 Description=Nginx ${NGINX_VERSION}
@@ -356,9 +470,9 @@ Wants=network-online.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/nginx.pid
-#ExecStartPre=/usr/bin/rm -f /run/nginx.pid
-ExecStartPre=rm -f /run/nginx.pid
+PIDFile=/var/run/nginx/nginx.pid
+#ExecStartPre=/usr/bin/rm -f /var/run/nginx/nginx.pid
+ExecStartPre=rm -f /var/run/nginx/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP \$MAINPID
@@ -379,30 +493,42 @@ EOF
   sudo systemctl enable nginx.service
 }
 
+function create_service_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) create_service_nginx_systemd ;;
+    raspbian) create_service_nginx_systemd ;;
+    centos) create_service_nginx_systemd ;;
+    fedora) create_service_nginx_systemd;;
+    alpine) create_service_nginx_openrc ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
+}
+
 function install_zlib () {
   cd ${TMP_PATH_NGINX}/${ZLIB_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_libressl () {
   cd ${TMP_PATH_NGINX}/${LIBRESSL_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function install_pcre () {
   cd ${TMP_PATH_NGINX}/${PCRE_VERSION}
   ./configure
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
@@ -415,9 +541,9 @@ function install_modsecurity () {
   ./configure --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION}/ \
     #--prefix=/opt/modsecurity \
     --with-libmodsecurity
-  make
+  make -j$(nproc)
   has_sudo
-  sudo make install
+  sudo make install -j$(nproc)
 
   cd $NEWBIE_INSTALLER_PATH
 }
@@ -425,7 +551,7 @@ function install_modsecurity () {
 function module_modsecurity_nginx (){
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --with-compat --add-dynamic-module=${TMP_PATH_NGINX}/${FOLDER_MODSECURITY_NGINX}/
-  make modules
+  make modules -j$(nproc)
   sudo cp -vr objs/ngx_http_modsecurity_module.so /etc/nginx/modules/.
 
   cd $NEWBIE_INSTALLER_PATH
@@ -449,81 +575,158 @@ EOF
 
 
 function configure_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) configure_nginx_with_google_perftools ;;
+    raspbian) configure_nginx_with_google_perftools ;;
+    centos) configure_nginx_with_google_perftools ;;
+    fedora) configure_nginx_with_google_perftools;;
+    alpine) configure_nginx_without_google_perftools ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
+}
+
+function configure_nginx_with_google_perftools () {
   install_pcre
   install_libressl
   install_zlib
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
   ./configure --prefix=$INSTALLATION_PATH_NGINX \
-            --sbin-path=/usr/sbin/nginx \
-            --modules-path=/usr/lib64/nginx/modules \
-            --conf-path=/etc/nginx/nginx.conf \
-            --error-log-path=/var/log/nginx/error.log \
-            --http-log-path=/var/log/nginx/access.log \
-            --pid-path=/var/run/nginx.pid \
-            --lock-path=/var/run/nginx.lock \
-            --user=$NGINX_USER \
-            --group=$NGINX_GROUP \
-            --build=Debian \
-            --builddir=nginx-${NGINX_VERSION} \
-            --with-select_module \
-            --with-poll_module \
-            --with-threads \
-            --with-file-aio \
-            --with-http_ssl_module \
-            --with-http_v2_module \
-            --with-http_realip_module \
-            --with-http_addition_module \
-            --with-http_xslt_module=dynamic \
-            --with-google_perftools_module \
-            --with-http_image_filter_module=dynamic \
-            --with-http_geoip_module=dynamic \
-            --with-http_sub_module \
-            --with-http_dav_module \
-            --with-http_flv_module \
-            --with-http_mp4_module \
-            --with-http_gunzip_module \
-            --with-http_gzip_static_module \
-            --with-http_auth_request_module \
-            --with-http_random_index_module \
-            --with-http_secure_link_module \
-            --with-http_degradation_module \
-            --with-http_slice_module \
-            --with-http_stub_status_module \
-            --without-http_autoindex_module \
-            --http-client-body-temp-path=/var/cache/nginx/client_temp \
-            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-            --with-mail=dynamic \
-            --with-mail_ssl_module \
-            --with-stream=dynamic \
-            --with-stream_ssl_module \
-            --with-stream_realip_module \
-            --with-stream_geoip_module=dynamic \
-            --with-stream_ssl_preread_module \
-            --with-compat \
-            --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
-            --with-pcre-jit \
-            --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
-            --with-openssl-opt=no-nextprotoneg \
-            --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
-            --with-zlib-asm=CPU \
-            --with-libatomic \
-            --with-debug
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib64/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx/nginx.pid \
+    --lock-path=/var/run/nginx/nginx.lock \
+    --user=$NGINX_USER \
+    --group=$NGINX_GROUP \
+    --build=Debian \
+    --builddir=nginx-${NGINX_VERSION} \
+    --with-select_module \
+    --with-poll_module \
+    --with-threads \
+    --with-file-aio \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_xslt_module=dynamic \
+    --with-google_perftools_module \
+    --with-http_image_filter_module=dynamic \
+    --with-http_geoip_module=dynamic \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_auth_request_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
+    --with-http_slice_module \
+    --with-http_stub_status_module \
+    --without-http_autoindex_module \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --with-mail=dynamic \
+    --with-mail_ssl_module \
+    --with-stream=dynamic \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-stream_geoip_module=dynamic \
+    --with-stream_ssl_preread_module \
+    --with-compat \
+    --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
+    --with-pcre-jit \
+    --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
+    --with-openssl-opt=no-nextprotoneg \
+    --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
+    --with-zlib-asm=CPU \
+    --with-libatomic \
+    --with-debug
+  cd $NEWBIE_INSTALLER_PATH
+}
+
+function configure_nginx_without_google_perftools () {
+  install_pcre
+  install_libressl
+  install_zlib
+  cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
+  ./configure --prefix=$INSTALLATION_PATH_NGINX \
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib64/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx/nginx.pid \
+    --lock-path=/var/run/nginx/nginx.lock \
+    --user=$NGINX_USER \
+    --group=$NGINX_GROUP \
+    --build=Debian \
+    --builddir=nginx-${NGINX_VERSION} \
+    --with-select_module \
+    --with-poll_module \
+    --with-threads \
+    --with-file-aio \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_xslt_module=dynamic \
+    --with-http_image_filter_module=dynamic \
+    --with-http_geoip_module=dynamic \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_auth_request_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
+    --with-http_slice_module \
+    --with-http_stub_status_module \
+    --without-http_autoindex_module \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --with-mail=dynamic \
+    --with-mail_ssl_module \
+    --with-stream=dynamic \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-stream_geoip_module=dynamic \
+    --with-stream_ssl_preread_module \
+    --with-compat \
+    --with-pcre=${TMP_PATH_NGINX}/${PCRE_VERSION} \
+    --with-pcre-jit \
+    --with-openssl=${TMP_PATH_NGINX}/${LIBRESSL_VERSION} \
+    --with-openssl-opt=no-nextprotoneg \
+    --with-zlib=${TMP_PATH_NGINX}/${ZLIB_VERSION} \
+    --with-zlib-asm=CPU \
+    --with-libatomic \
+    --with-debug
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function make_nginx () {
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  make
+  make -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 }
 
 function make_install_nginx () {
   has_sudo
   cd ${TMP_PATH_NGINX}/nginx-${NGINX_VERSION}
-  sudo make install
+  sudo make install -j$(nproc)
   cd $NEWBIE_INSTALLER_PATH
 
   create_user_nginx
@@ -531,9 +734,26 @@ function make_install_nginx () {
   final_adjustments
 }
 
-function run_service_nginx () {
+function run_service_nginx_systemd () {
   has_sudo
   sudo systemctl start nginx
+}
+
+function run_service_nginx_openrc () {
+  has_sudo
+  sudo rc-service nginx start
+}
+
+function run_service_nginx () {
+  local distro=$(what_distribution_are_you)
+  case $distro in
+    debian) run_service_nginx_systemd ;;
+    raspbian) run_service_nginx_systemd ;;
+    centos) run_service_nginx_systemd ;;
+    fedora) run_service_nginx_systemd;;
+    alpine) run_service_nginx_openrc ;;
+    *) red_text "We have not detected your $distro distribution, we're sorry!!! U.U";;
+  esac
 }
 
 function execute_nginx_compile () {
