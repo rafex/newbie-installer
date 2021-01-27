@@ -152,23 +152,23 @@ function install_dependencies_nginx () {
 
 function nginx_conf_default () {
   cat > ${TMP_PATH_NGINX}/client.conf.newbie << EOF
-  client_body_buffer_size 1k;
-  client_header_buffer_size 1k;
-  client_max_body_size 1k;
-  large_client_header_buffers 2 1k;
+client_body_buffer_size 1k;
+client_header_buffer_size 1k;
+client_max_body_size 1k;
+large_client_header_buffers 2 1k;
 
-  client_body_timeout 10;
-  client_header_timeout 10;
+client_body_timeout 10;
+client_header_timeout 10;
 EOF
 
   cat > ${TMP_PATH_NGINX}/gzip.conf.newbie << EOF
-  gzip on;
-  gzip_disable "msie6";
-  gzip_vary on;
-  gzip_proxied any;
-  gzip_comp_level 9;
-  gzip_buffers 16 8k;
-  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+gzip on;
+gzip_disable "msie6";
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 9;
+gzip_buffers 16 8k;
+gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 EOF
 
 cat > ${TMP_PATH_NGINX}/security.conf.newbie << EOF
@@ -181,63 +181,63 @@ modsecurity_rules_file /etc/nginx/modsec/main.conf;
 EOF
 
   cat > ${TMP_PATH_NGINX}/proxy.conf.newbie << EOF
-  proxy_redirect          off;
-  proxy_set_header        Host            \$host;
-  proxy_set_header        X-Real-IP       \$remote_addr;
-  proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto \$scheme;
-  proxy_set_header X-Real-IP \$remote_addr;
-  proxy_connect_timeout   90;
-  proxy_send_timeout      90;
-  proxy_read_timeout      90;
-  proxy_buffers           32 4k;
+proxy_redirect          off;
+proxy_set_header        Host            \$host;
+proxy_set_header        X-Real-IP       \$remote_addr;
+proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto \$scheme;
+proxy_set_header X-Real-IP \$remote_addr;
+proxy_connect_timeout   90;
+proxy_send_timeout      90;
+proxy_read_timeout      90;
+proxy_buffers           32 4k;
 EOF
   cat > ${TMP_PATH_NGINX}/timeout.conf.newbie << EOF
-  send_timeout 60;
-  keepalive_timeout 5 5;
+send_timeout 60;
+keepalive_timeout 5 5;
 EOF
   cat > ${TMP_PATH_NGINX}/ssl.conf.newbie << EOF
-  ssl_session_cache shared:le_nginx_SSL:10m;
-  ssl_session_timeout 1440m;
-  ssl_session_tickets off;
+ssl_session_cache shared:le_nginx_SSL:10m;
+ssl_session_timeout 1440m;
+ssl_session_tickets off;
 
-  ssl_protocols TLSv1.2 TLSv1.3;
-  ssl_prefer_server_ciphers on;
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers on;
 
-  ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
 EOF
   cat > ${TMP_PATH_NGINX}/nginx.conf.newbie << EOF
-  user  ${NGINX_USER};
-  worker_processes  4;
+user  ${NGINX_USER};
+worker_processes  4;
 
-  error_log  /var/log/nginx/error.log warn;
-  pid        /var/run/nginx/nginx.pid;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx/nginx.pid;
 
-  load_module modules/ngx_http_modsecurity_module.so;
+load_module modules/ngx_http_modsecurity_module.so;
 
-  events {
-      worker_connections  1024;
-      use epoll;
-      multi_accept on;
-  }
+events {
+  worker_connections  1024;
+  use epoll;
+  multi_accept on;
+}
 
-  http {
-      include	  /etc/nginx/mime.types;
-      include   /etc/nginx/conf.d/*.conf;
-      default_type  application/octet-stream;
+http {
+  include	  /etc/nginx/mime.types;
+  include   /etc/nginx/conf.d/*.conf;
+  default_type  application/octet-stream;
 
-      server_tokens off;
+  server_tokens off;
 
-      log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                        '\$status \$body_bytes_sent "\$http_referer" '
-                        '"\$http_user_agent" "\$http_x_forwarded_for"';
+  log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+    '\$status \$body_bytes_sent "\$http_referer" '
+    '"\$http_user_agent" "\$http_x_forwarded_for"';
 
-      access_log  /var/log/nginx/access.log  main;
-      sendfile        on;
-      tcp_nopush     on;
+  access_log  /var/log/nginx/access.log  main;
+  sendfile        on;
+  tcp_nopush     on;
 
-      include   /etc/nginx/sites-enabled/*.conf;
-  }
+  include   /etc/nginx/sites-enabled/*.conf;
+}
 EOF
   cat > ${TMP_PATH_NGINX}/default-site.conf.newbie << EOF
 server {
