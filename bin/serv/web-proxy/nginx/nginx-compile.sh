@@ -374,8 +374,10 @@ function create_folders_nginx () {
   has_sudo
   sudo mkdir -vp /var/cache/nginx/
   sudo mkdir -vp /var/log/nginx/
+  sudo mkdir -vp /var/run/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
+  sudo chown -R $NGINX_USER:$NGINX_GROUP /var/run/nginx
 }
 
 
