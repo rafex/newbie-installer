@@ -30,11 +30,11 @@ TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-3.0.2"
+LIBRESSL_VERSION="libressl-3.3.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.44"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.18.0"
+NGINX_VERSION="1.20.0"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
@@ -374,7 +374,7 @@ function create_folders_nginx () {
   has_sudo
   sudo mkdir -vp /var/cache/nginx/
   sudo mkdir -vp /var/log/nginx/
-  sudo mkdir -vp /var/run/nginx
+  sudo mkdir -vp /var/run/nginx/
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/cache/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/log/nginx
   sudo chown -R $NGINX_USER:$NGINX_GROUP /var/run/nginx
