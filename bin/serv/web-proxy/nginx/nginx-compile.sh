@@ -809,7 +809,7 @@ function nginx_compile_menu () {
     green_text "================================"
     green_text "================================"
     echo "-----------          -----------"
-    red_text "${NAME_OF_THE_MODULE_NGINX}"
+    red_text "${NAME_OF_THE_MODULE_NGINX} - ${NGINX_VERSION}"
     echo "-----------          -----------"
     green_text "================================"
     green_text "================================"
