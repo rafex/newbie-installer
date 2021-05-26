@@ -30,11 +30,11 @@ TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-3.3.2"
+LIBRESSL_VERSION="libressl-3.3.3"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
 PCRE_VERSION="pcre-8.44"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.20.0"
+NGINX_VERSION="1.20.1"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
@@ -64,9 +64,23 @@ function download_libs () {
   curl $URL_PCRE$PCRE_SRC --output ${TMP_PATH_NGINX}/${PCRE_SRC}
   curl $URL_LIBRESSL$LIBRESSL_SRC --output ${TMP_PATH_NGINX}/${LIBRESSL_SRC}
   cd ${TMP_PATH_NGINX}
-  git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
-  git clone -b ${MODSECURITY_NGINX_BRANCH} ${URL_GIT_MODSECURITY_NGINX}
-  git clone -b ${OWASP_MODSECURITY_CRS_BRANCH} ${URL_OWASP_MODSECURITY_CRS}
+  {
+    git clone -b ${MODSECURITY_BRANCH} ${URL_GIT_MODSECURITY}
+  } || {
+    git pull origin ${MODSECURITY_BRANCH}
+  }
+
+  {
+    git clone -b ${MODSECURITY_NGINX_BRANCH} ${URL_GIT_MODSECURITY_NGINX}
+  } || {
+    git pull origin ${MODSECURITY_NGINX_BRANCH}
+  }
+
+  {
+    git clone -b ${OWASP_MODSECURITY_CRS_BRANCH} ${URL_OWASP_MODSECURITY_CRS}
+  } || {
+    git pull origin ${OWASP_MODSECURITY_CRS_BRANCH}
+  }
   cd $NEWBIE_INSTALLER_PATH
 
 }
