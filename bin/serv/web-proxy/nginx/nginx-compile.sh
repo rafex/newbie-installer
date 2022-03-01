@@ -30,11 +30,11 @@ TMP_PATH_NGINX="/opt/nginx-newbie-installer"
 
 ZLIB_VERSION="zlib-1.2.11"
 ZLIB_SRC="${ZLIB_VERSION}.tar.gz"
-LIBRESSL_VERSION="libressl-3.3.3"
+LIBRESSL_VERSION="libressl-3.4.2"
 LIBRESSL_SRC="${LIBRESSL_VERSION}.tar.gz"
-PCRE_VERSION="pcre-8.44"
+PCRE_VERSION="pcre-8.45"
 PCRE_SRC="${PCRE_VERSION}.tar.gz"
-NGINX_VERSION="1.20.1"
+NGINX_VERSION="1.20.2"
 NGINX_SRC="nginx-${NGINX_VERSION}.tar.gz"
 
 MODSECURITY_BRANCH="v3/master"
@@ -42,7 +42,7 @@ OWASP_MODSECURITY_CRS_BRANCH="v3.3/dev"
 MODSECURITY_NGINX_BRANCH="master"
 
 URL_ZLIB="https://www.zlib.net/"
-URL_PCRE="https://ftp.pcre.org/pub/pcre/"
+URL_PCRE="https://iweb.dl.sourceforge.net/project/pcre/pcre/8.45/"
 URL_LIBRESSL="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/"
 
 URL_GIT_MODSECURITY="https://github.com/SpiderLabs/ModSecurity.git"
@@ -772,6 +772,12 @@ function run_service_nginx () {
   esac
 }
 
+function upgrade_nginx () {
+  download_nginx
+  sleep 1
+
+}
+
 function execute_nginx_compile () {
   path_nginx
   sleep 1
@@ -813,6 +819,7 @@ function nginx_compile_menu () {
   local option_10="Configure and compile ModSecurity 3"
   local option_11="ModSecurity - Nginx"
   local option_12="Start service"
+  local option_13="Upgrade Nginx"
   local option_all="All"
   trap '' 2  # ignore control + c
   while true
@@ -839,6 +846,7 @@ function nginx_compile_menu () {
     echo "Enter 10) ${option_10}"
     echo "Enter 11) ${option_11}"
     echo "Enter 12) ${option_12}"
+    echo "Enter 13) ${option_13}"
     echo "Enter a) ${option_all}"
     red_text "Enter q) Quit"
     yellow_text "Enter your selection here and hit <return>"
@@ -856,6 +864,7 @@ function nginx_compile_menu () {
      10) install_modsecurity && green_text "Finished ${option_10}" ;;
      11) module_modsecurity_nginx && green_text "Finished ${option_11}" ;;
      12) run_service_nginx && green_text "Finished ${option_12}" ;;
+     13) upgrade_nginx && green_text "Finished ${option_12}" ;;
      a) execute_nginx_compile && green_text "Finished ${option_all}" ;;
      q) good_bye ;;
     esac
